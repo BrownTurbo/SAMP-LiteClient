@@ -8,3 +8,5 @@
 .dev/**
 .git_/**
 build/**
+ui/**
+logs/**
