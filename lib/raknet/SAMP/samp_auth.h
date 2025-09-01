@@ -1,0 +1,1 @@
+extern char AuthKeyTable[TOTAL_AUTHKEYS][2][128];
