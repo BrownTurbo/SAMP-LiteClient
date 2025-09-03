@@ -236,6 +236,24 @@ public:
         locker.unlock();
     }
 
+    QSharedPointer<QPushButton> getPlaybackButton() const
+    {
+        if (playbackBtn.isNull())
+        {
+            qWarning() << "playbackBtn is uninitialized!";
+            return nullptr;
+        }
+        qDebug() << "QPushButton Pointer:" << static_cast<void *>(playbackBtn.data());
+        return playbackBtn;
+    }
+
+    void setPlaybackButton(const QSharedPointer<QPushButton> _playbackBtn)
+    {
+        QMutexLocker locker(&mutex_);
+        playbackBtn = _playbackBtn;
+        locker.unlock();
+    }
+
 private:
     Globals() : TXTDLog(nullptr), GNRLLog(nullptr), srvMaxPlayers(0), AudioVolume(0), CentralWidget(nullptr) {}
     ~Globals() {}
@@ -258,6 +276,7 @@ private:
     QSharedPointer<QLineEdit> msgInput;
     QSharedPointer<QPushButton> sendBtn;
     QSharedPointer<QPushButton> connectBtn;
+    QSharedPointer<QPushButton> playbackBtn;
 
     QMutex mutex_;
 

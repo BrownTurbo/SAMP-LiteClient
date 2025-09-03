@@ -104,7 +104,7 @@ void SAMPDialog::setupTabList(const QString& info) {
 void SAMPDialog::handleButtonClick(int buttonId) {
     QString text;
     bool response = false;
-        int listBoxItem = -1;
+    int listBoxItem = -1;
 
     if (dialogStyle == INPUT || dialogStyle == PASSWORD) {
         if (inputField) {

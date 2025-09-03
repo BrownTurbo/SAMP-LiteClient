@@ -49,6 +49,7 @@ QString removeMarkupTags(QString &text);
 
 bool ToggleChatBox();
 bool ToggleSendButton();
+bool TogglePlaybackButton();
 
 bool startsWith(const char *text, const char *prefix);
 

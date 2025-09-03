@@ -145,6 +145,7 @@ void sampDisconnect(int iTimeout)
 	SetGameState(GAMESTATE_DISCONNECTED);
 	ToggleChatBox();
 	ToggleSendButton();
+	TogglePlaybackButton();
 	AppendChatBox("Disconnected.");
 	AppendLogF("Disconnected.");
 	_logs->Log(LogLevel::INFO, "Disconnected.");

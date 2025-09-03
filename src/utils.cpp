@@ -362,6 +362,26 @@ bool ToggleSendButton()
     return true;
 }
 
+bool TogglePlaybackButton()
+{
+    QSharedPointer<QPushButton> _playbackButton = Globals::instance().getPlaybackButton();
+    if (_playbackButton.isNull())
+    {
+        qWarning() << "_playbackButton is not a valid pointer";
+        return false;
+    }
+    QPushButton *playbackButton = _playbackButton.get();
+    if (playbackButton == nullptr || playbackButton->parent() == nullptr)
+    {
+        qWarning() << "QPushButton instance is not valid.";
+        return false;
+    }
+    QMetaObject::invokeMethod(getMainWindow(), [playbackButton]() {
+        playbackButton->setEnabled(!playbackButton->isEnabled());
+    }, Qt::QueuedConnection);
+    return true;
+}
+
 bool startsWith(const char* text, const char* prefix)
 {
     if(text == nullptr || prefix == nullptr)

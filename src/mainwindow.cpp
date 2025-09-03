@@ -147,6 +147,7 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent) {
     playbackbtn->setIconSize(QSize(22, 22));
     playbackbtn->setText(QString::fromUtf8("Playback"));
     playbackbtn->setCursor(Qt::PointingHandCursor);
+    playbackbtn->setEnabled(false);
 
     this->setCentralWidget(centralwidget);
 
@@ -199,6 +200,11 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent) {
         if (ptr && !ptr->parent())
             ptr->deleteLater();
     }));
+
+    Globals::instance().setPlaybackButton(QSharedPointer<QPushButton>(playbackbtn, [](QPushButton *ptr)
+                                                                     {
+        if (ptr && !ptr->parent())
+            ptr->deleteLater(); }));
 
     Globals::instance().setCentralWidget(this->centralWidget());
 

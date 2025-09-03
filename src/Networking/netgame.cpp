@@ -128,6 +128,7 @@ void Packet_ConnectionSucceeded(Packet *p, RakClientInterface *pRakClient)
 	SetGameState(GAMESTATE_CONNECTED);
 	ToggleChatBox();
 	ToggleSendButton();
+	TogglePlaybackButton();
 
 	QSharedPointer<QPushButton> _connectBtn = Globals::instance().getSendButton();
 	if (_connectBtn.isNull())
@@ -711,6 +712,7 @@ void UpdateNetwork(RakClientInterface *pRakClient, Packet *pkt)
 				emit worker.MessageBox(QString::fromUtf8("Error"), QString::fromUtf8("[SAMP] Internal Failure."), QMessageBox::Ok, QMessageBox::Information);
 				ToggleChatBox();
 				ToggleSendButton();
+				TogglePlaybackButton();
 				emit worker.setStateMessage("Disconnected.");
 			}
 			break;
@@ -738,6 +740,7 @@ void UpdateNetwork(RakClientInterface *pRakClient, Packet *pkt)
 				pRakClient->Disconnect(2000);
 				ToggleChatBox();
 				ToggleSendButton();
+				TogglePlaybackButton();
 				emit worker.setStateMessage("Disconnected.");
 			}
 			break;
@@ -764,6 +767,7 @@ void UpdateNetwork(RakClientInterface *pRakClient, Packet *pkt)
 				emit worker.MessageBox(QString::fromUtf8("Information"), QString::fromUtf8("[SAMP] You are banned..."), QMessageBox::Ok, QMessageBox::Information);
 				ToggleChatBox();
 				ToggleSendButton();
+				TogglePlaybackButton();
 				emit worker.setStateMessage("Disconnected.");
 			}
 			break;
@@ -790,6 +794,7 @@ void UpdateNetwork(RakClientInterface *pRakClient, Packet *pkt)
 				emit worker.MessageBox(QString::fromUtf8("Error"), QString::fromUtf8("[SAMP] Connection attempt failed."), QMessageBox::Ok, QMessageBox::Critical);
 				ToggleChatBox();
 				ToggleSendButton();
+				TogglePlaybackButton();
 				emit worker.setStateMessage("Disconnected.");
 			}
 			break;
@@ -816,6 +821,7 @@ void UpdateNetwork(RakClientInterface *pRakClient, Packet *pkt)
 				emit worker.MessageBox(QString::fromUtf8("Error"), QString::fromUtf8("[SAMP] The server is full."), QMessageBox::Ok, QMessageBox::Critical);
 				ToggleChatBox();
 				ToggleSendButton();
+				TogglePlaybackButton();
 				emit worker.setStateMessage("Disconnected.");
 			}
 			break;
@@ -843,6 +849,7 @@ void UpdateNetwork(RakClientInterface *pRakClient, Packet *pkt)
 				pRakClient->Disconnect(0);
 				ToggleChatBox();
 				ToggleSendButton();
+				TogglePlaybackButton();
 				emit worker.setStateMessage("Disconnected.");
 			}
 			break;
@@ -869,6 +876,7 @@ void UpdateNetwork(RakClientInterface *pRakClient, Packet *pkt)
 				emit worker.MessageBox(QString::fromUtf8("Error"), QString::fromUtf8("[SAMP] The connection was lost."), QMessageBox::Ok, QMessageBox::Critical);
 				ToggleChatBox();
 				ToggleSendButton();
+				TogglePlaybackButton();
 				emit worker.setStateMessage("Disconnected.");
 			}
 			break;
