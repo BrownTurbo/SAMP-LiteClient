@@ -130,7 +130,7 @@ void Packet_ConnectionSucceeded(Packet *p, RakClientInterface *pRakClient)
 	ToggleSendButton();
 	TogglePlaybackButton();
 
-	QSharedPointer<QPushButton> _connectBtn = Globals::instance().getSendButton();
+	QSharedPointer<QPushButton> _connectBtn = Globals::instance().getConnectButton();
 	if (_connectBtn.isNull())
 	{
 		qWarning() << "_connectBtn is not a valid pointer";

@@ -77,7 +77,7 @@ void ConnectWindow::onConnectPressed()
 {
     if (GetGameState() != GAMESTATE_CONNECTED)
     {
-        QSharedPointer<QPushButton> _connectBtn = Globals::instance().getSendButton();
+        QSharedPointer<QPushButton> _connectBtn = Globals::instance().getConnectButton();
         if (_connectBtn.isNull())
         {
             qWarning() << "_connectBtn is not a valid pointer";

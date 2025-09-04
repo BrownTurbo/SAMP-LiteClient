@@ -118,6 +118,20 @@ bool __sampConnect(char *szHostname, int iPort, RakClientInterface *pRakClient)
 	dwLastConnectAttempt = GetTickCount();
 	SetGameState(GAMESTATE_CONNECTING);
 
+	QSharedPointer<QPushButton> _connectBtn = Globals::instance().getConnectButton();
+	if (_connectBtn.isNull())
+	{
+		qWarning() << "_connectBtn is not a valid pointer";
+		return false;
+	}
+	QPushButton *connectBtn = _connectBtn.get();
+	if (connectBtn == nullptr || connectBtn->parent() == nullptr)
+	{
+		qWarning() << "QPushButton instance is not valid.";
+		return false;
+	}
+	connectBtn->setText("Abort");
+
 	return pRakClient->Connect(szHostname, iPort, 0, 0, 5);
 }
 
@@ -163,7 +177,7 @@ void sampDisconnect(int iTimeout)
 		emit worker.setStateMessage("Disconnected");
 	}
 
-	QSharedPointer<QPushButton> _connectBtn = Globals::instance().getSendButton();
+	QSharedPointer<QPushButton> _connectBtn = Globals::instance().getConnectButton();
 	if (_connectBtn.isNull())
 	{
 		qWarning() << "_connectBtn is not a valid pointer";
