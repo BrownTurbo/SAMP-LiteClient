@@ -30,48 +30,9 @@ jobs:
         aqtversion: '>=3.0.0'
         host: 'linux'
         target: 'desktop'
+        arch: 'gcc_64'
         install-deps: true
-        modules: |
-          qt3d
-          qt5compat
-          qtbase
-          qtbase-private
-          qtcharts
-          qtconnectivity
-          qtdatavisualization
-          qtdeclarative
-          qtdeclarative-private
-          qthttpserver
-          qtkuserfeedback
-          qtlanguageserver
-          qtlanguageserver-private
-          qtlottie
-          qtmultimedia
-          qtnetworkauth
-          qtpdf
-          qtpositioning
-          qtquick3d
-          qtquick3dphysics
-          qtquicktimeline
-          qtremoteobjects
-          qtscxml
-          qtsensors
-          qtserialbus
-          qtserialport
-          qtshadertools
-          qtspeech
-          qtsvg
-          qttools
-          qttools-private
-          qtvirtualkeyboard
-          qtwayland
-          qtwayland-private
-          qtwebchannel
-          qtwebengine
-          qtwebengine-private
-          qtwebsockets
-          qtwebsockets-private
-          qtwebview
+        modules: 'qt3d qt5compat qtbase qtbase-private qtcharts qtconnectivity qtdatavisualization qtdeclarative qtdeclarative-private qthttpserver qtkuserfeedback qtlanguageserver qtlanguageserver-private qtlottie qtmultimedia qtnetworkauth qtpdf qtpositioning qtquick3d qtquick3dphysics qtquicktimeline qtremoteobjects qtscxml qtsensors qtserialbus qtserialport qtshadertools qtspeech qtsvg qttools qttools-private qtvirtualkeyboard qtwayland qtwayland-private qtwebchannel qtwebengine qtwebengine-private qtwebsockets qtwebsockets-private qtwebview'
 
     - name: Configure CMake
       # Configure CMake in a 'build' subdirectory. `CMAKE_BUILD_TYPE` is only required if you are using a single-configuration generator such as make.
