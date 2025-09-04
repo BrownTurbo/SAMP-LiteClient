@@ -64,9 +64,9 @@ public:
         LogsD = newB;
     }
 
-    QSharedPointer<QDockWidget> getLogsW() const
+    QWidget* getLogsW() const
     {
-        if (LogsW.isNull())
+        if (LogsW == nullptr)
         {
             qWarning() << "LogsW is uninitialized!";
             return nullptr;
@@ -74,7 +74,7 @@ public:
         return LogsW;
     }
 
-    void setLogsW(const QSharedPointer<QDockWidget> newW)
+    void setLogsW(QWidget* newW)
     {
         LogsW = newW;
     }
@@ -264,7 +264,7 @@ private:
     QSharedPointer<QWizardPage> ConnectW;
     QSharedPointer<QGroupBox> SettingsW;
     QSharedPointer<QTextBrowser> LogsD;
-    QSharedPointer<QDockWidget> LogsW;
+    QWidget* LogsW;
     QSharedPointer<QTextBrowser> ChatD;
     FILE *TXTDLog;
     FILE *GNRLLog;

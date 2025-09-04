@@ -40,8 +40,7 @@ void Logs::Log(LogLevel level, const char *fmt, ...)
 
     QSharedPointer<QTextBrowser> _logsBrowser = Globals::instance().getLogsD();
     QTextBrowser* logsBrowser = _logsBrowser.data();
-    QSharedPointer<QDockWidget> _logsWidget = Globals::instance().getLogsW();
-    QDockWidget* logsWidget = _logsWidget.data();
+    QWidget* logsWidget = Globals::instance().getLogsW();
     struct tm * st;
     time_t curr_time = time(NULL);
     st = localtime(&curr_time);

@@ -108,6 +108,7 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent) {
     scoreboardbtn->setIconSize(QSize(22, 22));
     scoreboardbtn->setText(QString::fromUtf8("Scoreboard"));
     scoreboardbtn->setCursor(Qt::PointingHandCursor);
+    scoreboardbtn->setEnabled(false);
     pauseButton = new QPushButton(centralwidget);
     pauseButton->setObjectName(QString::fromUtf8("pauseButton"));
     pauseButton->setGeometry(QRect(1160, 560, 20, 20));
@@ -274,15 +275,18 @@ void MainWindow::sendMessage() {
 
 void MainWindow::showLogsWindow()
 {
-    if (!logsWindow) {
+    if (!logsWindow)
         logsWindow = new LogsWindow(this);
-        logsWindow->setFeatures(QDockWidget::DockWidgetClosable | QDockWidget::DockWidgetMovable | QDockWidget::DockWidgetFloatable);
-        logsWindow->setFloating(true);
-        logsWindow->setAllowedAreas(Qt::NoDockWidgetArea);
-    }
 
-    centerOverParent(logsWindow, this);
-    logsWindow->show();
+    QDockWidget *dock = new QDockWidget("Logs", this);
+    dock->setWidget(logsWindow);
+    dock->setFeatures(QDockWidget::DockWidgetClosable | QDockWidget::DockWidgetMovable | QDockWidget::DockWidgetFloatable);
+    dock->setFloating(true);
+    dock->setAllowedAreas(Qt::NoDockWidgetArea);
+    dock->resize(logsWindow->sizeHint());
+
+    centerOverParent(dock, this);
+    dock->show();
 }
 
 void MainWindow::showSettingsWindow()
@@ -295,6 +299,7 @@ void MainWindow::showSettingsWindow()
     dock->setFeatures(QDockWidget::DockWidgetClosable | QDockWidget::DockWidgetMovable | QDockWidget::DockWidgetFloatable);
     dock->setFloating(true);
     dock->setAllowedAreas(Qt::NoDockWidgetArea);
+    dock->resize(settingsWindow->sizeHint());
 
     centerOverParent(dock, this);
     dock->show();
@@ -321,6 +326,7 @@ void MainWindow::showConnectWindow()
         dock->setFeatures(QDockWidget::DockWidgetClosable | QDockWidget::DockWidgetMovable | QDockWidget::DockWidgetFloatable);
         dock->setFloating(true);
         dock->setAllowedAreas(Qt::NoDockWidgetArea);
+        dock->resize(connectWindow->sizeHint());
 
         centerOverParent(dock, this);
         dock->show();
@@ -337,6 +343,7 @@ void MainWindow::showScoreBoardWindow()
     dock->setFeatures(QDockWidget::DockWidgetClosable | QDockWidget::DockWidgetMovable | QDockWidget::DockWidgetFloatable);
     dock->setFloating(true);
     dock->setAllowedAreas(Qt::NoDockWidgetArea);
+    dock->resize(settingsWindow->sizeHint());
 
     centerOverParent(dock, this);
     dock->show();
@@ -352,6 +359,7 @@ void MainWindow::showPlaybackWindow()
     dock->setFeatures(QDockWidget::DockWidgetClosable | QDockWidget::DockWidgetMovable | QDockWidget::DockWidgetFloatable);
     dock->setFloating(true);
     dock->setAllowedAreas(Qt::NoDockWidgetArea);
+    dock->resize(playbackWindow->sizeHint());
 
     centerOverParent(dock, this);
     dock->show();

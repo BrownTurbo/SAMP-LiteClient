@@ -12,7 +12,7 @@
 #include "globals.h"
 //#include "utils.h"
 
-class LogsWindow : public QDockWidget {
+class LogsWindow : public QWidget {
 
 public:
     explicit LogsWindow(QWidget *parent = nullptr);
