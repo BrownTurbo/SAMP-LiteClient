@@ -714,6 +714,20 @@ void UpdateNetwork(RakClientInterface *pRakClient, Packet *pkt)
 				ToggleSendButton();
 				TogglePlaybackButton();
 				emit worker.setStateMessage("Disconnected.");
+
+				QSharedPointer<QPushButton> _connectBtn = Globals::instance().getConnectButton();
+				if (_connectBtn.isNull())
+				{
+					qWarning() << "_connectBtn is not a valid pointer";
+					break;
+				}
+				QPushButton *connectBtn = _connectBtn.get();
+				if (connectBtn == nullptr || connectBtn->parent() == nullptr)
+				{
+					qWarning() << "QPushButton instance is not valid.";
+					break;
+				}
+				connectBtn->setText("Connect");
 			}
 			break;
 		case ID_DISCONNECTION_NOTIFICATION:
@@ -742,6 +756,20 @@ void UpdateNetwork(RakClientInterface *pRakClient, Packet *pkt)
 				ToggleSendButton();
 				TogglePlaybackButton();
 				emit worker.setStateMessage("Disconnected.");
+
+				QSharedPointer<QPushButton> _connectBtn = Globals::instance().getConnectButton();
+				if (_connectBtn.isNull())
+				{
+					qWarning() << "_connectBtn is not a valid pointer";
+					break;
+				}
+				QPushButton *connectBtn = _connectBtn.get();
+				if (connectBtn == nullptr || connectBtn->parent() == nullptr)
+				{
+					qWarning() << "QPushButton instance is not valid.";
+					break;
+				}
+				connectBtn->setText("Connect");
 			}
 			break;
 		case ID_CONNECTION_BANNED:
@@ -769,6 +797,20 @@ void UpdateNetwork(RakClientInterface *pRakClient, Packet *pkt)
 				ToggleSendButton();
 				TogglePlaybackButton();
 				emit worker.setStateMessage("Disconnected.");
+
+				QSharedPointer<QPushButton> _connectBtn = Globals::instance().getConnectButton();
+				if (_connectBtn.isNull())
+				{
+					qWarning() << "_connectBtn is not a valid pointer";
+					break;
+				}
+				QPushButton *connectBtn = _connectBtn.get();
+				if (connectBtn == nullptr || connectBtn->parent() == nullptr)
+				{
+					qWarning() << "QPushButton instance is not valid.";
+					break;
+				}
+				connectBtn->setText("Connect");
 			}
 			break;
 		case ID_CONNECTION_ATTEMPT_FAILED:
@@ -796,6 +838,20 @@ void UpdateNetwork(RakClientInterface *pRakClient, Packet *pkt)
 				ToggleSendButton();
 				TogglePlaybackButton();
 				emit worker.setStateMessage("Disconnected.");
+
+				QSharedPointer<QPushButton> _connectBtn = Globals::instance().getConnectButton();
+				if (_connectBtn.isNull())
+				{
+					qWarning() << "_connectBtn is not a valid pointer";
+					break;
+				}
+				QPushButton *connectBtn = _connectBtn.get();
+				if (connectBtn == nullptr || connectBtn->parent() == nullptr)
+				{
+					qWarning() << "QPushButton instance is not valid.";
+					break;
+				}
+				connectBtn->setText("Connect");
 			}
 			break;
 		case ID_NO_FREE_INCOMING_CONNECTIONS:
@@ -823,6 +879,20 @@ void UpdateNetwork(RakClientInterface *pRakClient, Packet *pkt)
 				ToggleSendButton();
 				TogglePlaybackButton();
 				emit worker.setStateMessage("Disconnected.");
+
+				QSharedPointer<QPushButton> _connectBtn = Globals::instance().getConnectButton();
+				if (_connectBtn.isNull())
+				{
+					qWarning() << "_connectBtn is not a valid pointer";
+					break;
+				}
+				QPushButton *connectBtn = _connectBtn.get();
+				if (connectBtn == nullptr || connectBtn->parent() == nullptr)
+				{
+					qWarning() << "QPushButton instance is not valid.";
+					break;
+				}
+				connectBtn->setText("Connect");
 			}
 			break;
 		case ID_INVALID_PASSWORD:
@@ -851,6 +921,20 @@ void UpdateNetwork(RakClientInterface *pRakClient, Packet *pkt)
 				ToggleSendButton();
 				TogglePlaybackButton();
 				emit worker.setStateMessage("Disconnected.");
+
+				QSharedPointer<QPushButton> _connectBtn = Globals::instance().getConnectButton();
+				if (_connectBtn.isNull())
+				{
+					qWarning() << "_connectBtn is not a valid pointer";
+					break;
+				}
+				QPushButton *connectBtn = _connectBtn.get();
+				if (connectBtn == nullptr || connectBtn->parent() == nullptr)
+				{
+					qWarning() << "QPushButton instance is not valid.";
+					break;
+				}
+				connectBtn->setText("Connect");
 			}
 			break;
 		case ID_CONNECTION_LOST:
@@ -878,6 +962,20 @@ void UpdateNetwork(RakClientInterface *pRakClient, Packet *pkt)
 				ToggleSendButton();
 				TogglePlaybackButton();
 				emit worker.setStateMessage("Disconnected.");
+
+				QSharedPointer<QPushButton> _connectBtn = Globals::instance().getConnectButton();
+				if (_connectBtn.isNull())
+				{
+					qWarning() << "_connectBtn is not a valid pointer";
+					break;
+				}
+				QPushButton *connectBtn = _connectBtn.get();
+				if (connectBtn == nullptr || connectBtn->parent() == nullptr)
+				{
+					qWarning() << "QPushButton instance is not valid.";
+					break;
+				}
+				connectBtn->setText("Connect");
 			}
 			break;
 		case ID_CONNECTION_REQUEST_ACCEPTED:
