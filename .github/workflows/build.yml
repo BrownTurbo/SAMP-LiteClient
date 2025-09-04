@@ -28,7 +28,7 @@ jobs:
       with:
         version: '6.10.0'
         aqtversion: '>=3.0.0'
-        host: 'linux'
+        host: 'linux_gcc_64'
         target: 'desktop'
         arch: 'gcc_64'
         install-deps: true
