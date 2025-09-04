@@ -26,13 +26,13 @@ jobs:
     - name: Install Qt
       uses: jurplel/install-qt-action@v4
       with:
-        version: 6.8.3
+        version: '6.8.3'
         aqtversion: '>=3.0.0'
         host: 'linux'
         target: 'desktop'
         arch: 'gcc_64'
         install-deps: true
-        modules: 'qt3d qt5compat qtbase qtbase-private qtcharts qtconnectivity qtdatavisualization qtdeclarative qtdeclarative-private qthttpserver qtkuserfeedback qtlanguageserver qtlanguageserver-private qtlottie qtmultimedia qtnetworkauth qtpdf qtpositioning qtquick3d qtquick3dphysics qtquicktimeline qtremoteobjects qtscxml qtsensors qtserialbus qtserialport qtshadertools qtspeech qtsvg qttools qttools-private qtvirtualkeyboard qtwayland qtwayland-private qtwebchannel qtwebengine qtwebengine-private qtwebsockets qtwebsockets-private qtwebview'
+        modules: 'qt3d qt5compat base charts connectivity datavisualization declarative httpserver kuserfeedback languageserver lottie multimedia networkauth pdf positioning quick3d quick3dphysics quicktimeline remoteobjects scxml sensors serialbus serialport shadertools speech svg tools virtualkeyboard wayland webchannel webengine websockets webview'
 
     - name: Configure CMake
       # Configure CMake in a 'build' subdirectory. `CMAKE_BUILD_TYPE` is only required if you are using a single-configuration generator such as make.
