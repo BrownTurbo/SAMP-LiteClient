@@ -50,7 +50,7 @@ set(SOURCES
     src/Game/misc_funcs.cpp
     src/Game/PlayerPos.cpp
     src/RakNetWorker.cpp
-    #src/scorebwindow.cpp
+    src/scorebwindow.cpp
     src/Game/CAnimationInfo.cpp
     src/Game/playback.cpp
     src/Game/recorder.cpp
@@ -83,7 +83,7 @@ set(HEADERS
     include/RakNetWorker.h
     include/ThreadWorker.h
     include/WorkerClass.h
-    #include/scorebwindow.h
+    include/scorebwindow.h
     include/Game/CAnimationInfo.h
     include/Game/playback.h
     include/Game/recorder.h

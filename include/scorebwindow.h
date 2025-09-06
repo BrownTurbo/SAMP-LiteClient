@@ -9,12 +9,11 @@
 #include <QtWidgets/QVBoxLayout>
 #include <QtWidgets/QWizard>
 #include <QtWidgets/QWizardPage>
-#include <QtCore/QTimer>
+#include <QtWidgets/QHeaderView>
 #include <QtCore/QStringList>
 #include <cstdlib>
-#include <ctime>
 
-#include "../globals.h"
+#include "./globals.h"
 
 class Scoreboard : public QDockWidget
 {
@@ -24,26 +23,23 @@ public:
     Scoreboard(QWidget *parent = nullptr);
     ~Scoreboard();
 
-/*private slots:
-    void updatePings();
-*/
-
-public:
-    void clearRow(QTableWidget *table, int row);
-    bool isRowEmpty(QTableWidget *table, int row);
+private slots:
+    bool updateTableSize(int playersCount);
 
 private:
     QTableWidget *tableWidget;
-    QList<Player> players;
 
-    void populatePlayers();
-
-    struct Player
+    struct PlayerDTA
     {
         int id;
         QString name;
         int score;
         int ping;
     };
+
+public:
+    bool isRowEmpty(int row);
+
+    bool handlePlayer(PlayerDTA player);
 };
 #endif

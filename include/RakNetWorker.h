@@ -10,6 +10,8 @@
 #include "Game/PlayerPos.h"
 #include "Game/playback.h"
 
+#include "scorebwindow.h"
+
 class RakNetWorker : public QThread {
     Q_OBJECT
 
