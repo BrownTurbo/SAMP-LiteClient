@@ -15,6 +15,7 @@
 #include "../globals.h"
 #include "../Game/playback.h"
 #include "../Game/recorder.h"
+#include "../scorebwindow.h"
 
 void resetPools();
 void UpdatePlayerScoresAndPings(int iWait, int iMS, RakClientInterface *pRakClient);

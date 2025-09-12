@@ -23,12 +23,12 @@ public:
     Scoreboard(QWidget *parent = nullptr);
     ~Scoreboard();
 
-private slots:
-    bool updateTableSize(int playersCount);
-
 private:
     QTableWidget *tableWidget;
 
+    bool isRowEmpty(int row);
+
+public:
     struct PlayerDTA
     {
         int id;
@@ -37,9 +37,8 @@ private:
         int ping;
     };
 
-public:
-    bool isRowEmpty(int row);
-
-    bool handlePlayer(PlayerDTA player);
+    void updateTableSize(int playersCount);
+    void handlePlayer(PlayerDTA player);
+    bool removePlayer(int playerid);
 };
 #endif

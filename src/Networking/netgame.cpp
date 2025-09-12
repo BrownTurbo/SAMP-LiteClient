@@ -728,6 +728,8 @@ void UpdateNetwork(RakClientInterface *pRakClient, Packet *pkt)
 					break;
 				}
 				connectBtn->setText("Connect");
+				Scoreboard *scoreboard_;
+				scoreboard_->removePlayer(g_myPlayerID);
 			}
 			break;
 		case ID_DISCONNECTION_NOTIFICATION:
@@ -770,6 +772,8 @@ void UpdateNetwork(RakClientInterface *pRakClient, Packet *pkt)
 					break;
 				}
 				connectBtn->setText("Connect");
+				Scoreboard *scoreboard_;
+				scoreboard_->removePlayer(g_myPlayerID);
 			}
 			break;
 		case ID_CONNECTION_BANNED:
@@ -811,6 +815,8 @@ void UpdateNetwork(RakClientInterface *pRakClient, Packet *pkt)
 					break;
 				}
 				connectBtn->setText("Connect");
+				Scoreboard *scoreboard_;
+				scoreboard_->removePlayer(g_myPlayerID);
 			}
 			break;
 		case ID_CONNECTION_ATTEMPT_FAILED:
@@ -852,6 +858,8 @@ void UpdateNetwork(RakClientInterface *pRakClient, Packet *pkt)
 					break;
 				}
 				connectBtn->setText("Connect");
+				Scoreboard *scoreboard_;
+				scoreboard_->removePlayer(g_myPlayerID);
 			}
 			break;
 		case ID_NO_FREE_INCOMING_CONNECTIONS:
@@ -893,6 +901,8 @@ void UpdateNetwork(RakClientInterface *pRakClient, Packet *pkt)
 					break;
 				}
 				connectBtn->setText("Connect");
+				Scoreboard *scoreboard_;
+				scoreboard_->removePlayer(g_myPlayerID);
 			}
 			break;
 		case ID_INVALID_PASSWORD:
@@ -935,6 +945,8 @@ void UpdateNetwork(RakClientInterface *pRakClient, Packet *pkt)
 					break;
 				}
 				connectBtn->setText("Connect");
+				Scoreboard *scoreboard_;
+				scoreboard_->removePlayer(g_myPlayerID);
 			}
 			break;
 		case ID_CONNECTION_LOST:
@@ -976,6 +988,8 @@ void UpdateNetwork(RakClientInterface *pRakClient, Packet *pkt)
 					break;
 				}
 				connectBtn->setText("Connect");
+				Scoreboard* scoreboard_;
+				scoreboard_->removePlayer(g_myPlayerID);
 			}
 			break;
 		case ID_CONNECTION_REQUEST_ACCEPTED:

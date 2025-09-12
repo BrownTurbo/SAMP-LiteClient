@@ -95,7 +95,6 @@ void RakNetWorker::run()
 					handleProperty(QString::fromUtf8("Server PlayerBase"), false, QString::number(getPlayerCount()));
 					handleProperty(QString::fromUtf8("World Time"), false, QString::number(g_srvWorldTime));
 					handleProperty(QString::fromUtf8("Weather"), false, QString::number(g_srvWeather));
-					handleProperty(QString::fromUtf8("Player Ping"), false, QString::number(playerPool[g_myPlayerID].dwPing));
 					handleProperty(QString::fromUtf8("Player Health"), false, QString::fromUtf8(szHealthText));
 					handleProperty(QString::fromUtf8("Player Armour"), false, QString::fromUtf8(szArmourText));
 					handleProperty(QString::fromUtf8("Player Skin"), false, QString::number(playerPool[g_myPlayerID].onfootData.BYTESkin));
@@ -118,6 +117,16 @@ void RakNetWorker::run()
 						handleProperty(QString::fromUtf8(szSkillsTXT), false, QString::number(playerPool[g_myPlayerID].onfootData.SkillLevel[skillID]));
 					}
 					handleProperty(QString::fromUtf8("Player Team"), false, QString::number(playerPool[g_myPlayerID].onfootData.BYTETeam));
+
+					Scoreboard::PlayerDTA ScoreboardDTA;
+					Scoreboard* scoreboard_;
+
+					ScoreboardDTA.id = g_myPlayerID;
+					ScoreboardDTA.name = playerPool[g_myPlayerID].szPlayerName;
+					ScoreboardDTA.score = playerPool[g_myPlayerID].iScore;
+					ScoreboardDTA.ping = playerPool[g_myPlayerID].dwPing;
+					scoreboard_->handlePlayer(ScoreboardDTA);
+					scoreboard_->updateTableSize(getPlayerCountWoNPC());
 				}
 
 				if (settings.iUpdateStats)

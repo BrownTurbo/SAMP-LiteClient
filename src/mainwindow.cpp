@@ -239,6 +239,12 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent) {
     playbackWindow->show();
     playbackWindow->hide();
 
+    if (!scoreboardWindow)
+        scoreboardWindow = new Scoreboard(this);
+    centerOverParent(scoreboardWindow, this);
+    scoreboardWindow->show();
+    scoreboardWindow->hide();
+
     // SAMP...
     Nworker = new RakNetWorker();
     threadManager->queueWorker(Nworker);
@@ -335,15 +341,15 @@ void MainWindow::showConnectWindow()
 
 void MainWindow::showScoreBoardWindow()
 {
-    if (!settingsWindow)
-        settingsWindow = new SettingsWindow(this);
+    if (!scoreboardWindow)
+        scoreboardWindow = new Scoreboard(this);
 
-    QDockWidget *dock = new QDockWidget("Settings", this);
-    dock->setWidget(settingsWindow);
+    QDockWidget *dock = new QDockWidget("Scoreboard", this);
+    dock->setWidget(scoreboardWindow);
     dock->setFeatures(QDockWidget::DockWidgetClosable | QDockWidget::DockWidgetMovable | QDockWidget::DockWidgetFloatable);
     dock->setFloating(true);
     dock->setAllowedAreas(Qt::NoDockWidgetArea);
-    dock->resize(settingsWindow->sizeHint());
+    dock->resize(scoreboardWindow->sizeHint());
 
     centerOverParent(dock, this);
     dock->show();

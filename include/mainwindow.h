@@ -30,6 +30,7 @@
 #include "settingswindow.h"
 #include "connectwindow.h"
 #include "playbackwindow.h"
+#include "scorebwindow.h"
 
 #include "globals.h"
 #include "xmlsets.h"
@@ -86,6 +87,7 @@ private:
     SettingsWindow *settingsWindow = nullptr;
     ConnectWindow *connectWindow = nullptr;
     PlaybackWindow *playbackWindow = nullptr;
+    Scoreboard *scoreboardWindow = nullptr;
 
     RakNetWorker *Nworker;
 

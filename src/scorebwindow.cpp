@@ -36,6 +36,12 @@ Scoreboard::Scoreboard(QWidget *parent) : QDockWidget("Scoreboard", parent)
 Scoreboard::~Scoreboard() {}
 
 bool Scoreboard::isRowEmpty(int row) {
+    if(tableWidget == nullptr)
+        return false;
+
+    if (tableWidget->columnCount() == 0)
+        return false;
+
     for (int col = 0; col < tableWidget->columnCount(); ++col)
     {
         QTableWidgetItem *item = tableWidget->item(row, col);
@@ -45,26 +51,39 @@ bool Scoreboard::isRowEmpty(int row) {
     return true;
 }
 
-bool Scoreboard::updateTableSize(int playersCount)
+void Scoreboard::updateTableSize(int playersCount)
 {
+    if (tableWidget == nullptr)
+        return;
+
     tableWidget->setRowCount(playersCount);
-    return true;
 }
 
-bool Scoreboard::handlePlayer(PlayerDTA player)
+void Scoreboard::handlePlayer(PlayerDTA player)
 {
-    for (int col = 0; col < tableWidget->columnCount(); ++col)
-        tableWidget->takeItem(player.id, col);
+    if (tableWidget == nullptr)
+        return;
+
+    if (!isRowEmpty(player.id))
+    {
+        for (int col = 0; col < tableWidget->columnCount(); ++col)
+            tableWidget->takeItem(player.id, col);
+    }
 
     tableWidget->setItem(player.id, 0, new QTableWidgetItem(QString::number(player.id)));
     tableWidget->setItem(player.id, 1, new QTableWidgetItem(player.name));
     tableWidget->setItem(player.id, 2, new QTableWidgetItem(QString::number(player.score)));
     tableWidget->setItem(player.id, 3, new QTableWidgetItem(QString::number(player.ping)));
-    return true;
 }
 
 bool Scoreboard::removePlayer(int playerid)
 {
+    if (tableWidget == nullptr)
+        return false;
+
+    if (isRowEmpty(playerid))
+        return false;
+
     for (int col = 0; col < tableWidget->columnCount(); ++col)
         tableWidget->takeItem(playerid, col);
     return true;
