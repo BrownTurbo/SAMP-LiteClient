@@ -1,18 +1,16 @@
 #include "../include/scorebwindow.h"
 
-Scoreboard::Scoreboard(QWidget *parent) : QDockWidget("Scoreboard", parent)
+Scoreboard::Scoreboard(QWidget *parent) : QWidget(parent)
 {
-    QWidget *dockContent = new QWidget(this);
-
-    dockContent->resize(1044, 707);
-    dockContent->setFixedSize(1044, 707);
+    this->resize(1044, 707);
+    this->setFixedSize(1044, 707);
     QSizePolicy sizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
     sizePolicy.setHorizontalStretch(0);
     sizePolicy.setVerticalStretch(0);
     sizePolicy.setHeightForWidth(this->sizePolicy().hasHeightForWidth());
-    dockContent->setSizePolicy(sizePolicy);
-    if (dockContent->objectName().isEmpty())
-        dockContent->setObjectName(QString::fromUtf8("ScoreBWidget"));
+    this->setSizePolicy(sizePolicy);
+    if (this->objectName().isEmpty())
+        this->setObjectName(QString::fromUtf8("ScoreBWidget"));
     tableWidget = new QTableWidget(this);
     if (tableWidget->objectName().isEmpty())
         tableWidget->setObjectName(QString::fromUtf8("scoreboard"));
@@ -25,10 +23,9 @@ Scoreboard::Scoreboard(QWidget *parent) : QDockWidget("Scoreboard", parent)
     tableWidget->setSelectionMode(QAbstractItemView::SingleSelection);
     tableWidget->verticalHeader()->setVisible(false);
 
-    QVBoxLayout *layout = new QVBoxLayout(dockContent);
+    QVBoxLayout *layout = new QVBoxLayout(this);
     layout->addWidget(tableWidget);
-    dockContent->setLayout(layout);
-    this->setWidget(dockContent);
+    this->setLayout(layout);
 
     QMetaObject::connectSlotsByName(this);
 }

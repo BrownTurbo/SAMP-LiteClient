@@ -3,7 +3,6 @@
 #define SCOREBWINDOW_H
 
 #include <QtWidgets/QApplication>
-#include <QtWidgets/QDockWidget>
 #include <QtWidgets/QPushButton>
 #include <QtWidgets/QTableWidget>
 #include <QtWidgets/QVBoxLayout>
@@ -15,7 +14,7 @@
 
 #include "./globals.h"
 
-class Scoreboard : public QDockWidget
+class Scoreboard : public QWidget
 {
     Q_OBJECT
 
