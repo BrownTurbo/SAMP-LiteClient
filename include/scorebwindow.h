@@ -10,6 +10,7 @@
 #include <QtWidgets/QWizardPage>
 #include <QtWidgets/QHeaderView>
 #include <QtCore/QStringList>
+#include <QtWidgets/QHeaderView>
 #include <cstdlib>
 
 #include "./globals.h"
@@ -36,6 +37,7 @@ public:
         int ping;
     };
 
+public slots:
     void updateTableSize(int playersCount);
     void handlePlayer(PlayerDTA player);
     bool removePlayer(int playerid);
