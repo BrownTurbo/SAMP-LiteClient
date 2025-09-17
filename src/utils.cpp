@@ -43,8 +43,7 @@ int __MessageBox(const QString title, const QString message, QMessageBox::Standa
 
 uint32_t GetTickCount() {
     using namespace std::chrono;
-    return static_cast<uint32_t>(duration_cast<milliseconds>(
-        steady_clock::now().time_since_epoch()).count());
+    return static_cast<uint32_t>(duration_cast<milliseconds>(steady_clock::now().time_since_epoch()).count());
 }
 
 QWidget* getMainWidget() {
