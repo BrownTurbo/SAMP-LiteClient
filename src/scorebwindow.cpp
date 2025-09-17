@@ -92,7 +92,10 @@ bool Scoreboard::removePlayer(int playerid)
     if (isRowEmpty(playerid))
         return false;
 
-    for (int col = 0; col < tableWidget->columnCount(); ++col)
-        tableWidget->takeItem(playerid, col);
+    if (tableWidget->item(playerid, 0)->text().toInt() == playerid)
+    {
+        for (int col = 0; col < tableWidget->columnCount(); ++col)
+            tableWidget->takeItem(playerid, col);
+    }
     return true;
 }

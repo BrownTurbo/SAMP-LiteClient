@@ -11,7 +11,6 @@
 #include <QtWidgets/QHeaderView>
 #include <QtCore/QStringList>
 #include <QtWidgets/QHeaderView>
-#include <QtCore/QPointer>
 #include <cstdlib>
 
 #include "./globals.h"
@@ -25,7 +24,7 @@ public:
     ~Scoreboard();
 
 private:
-    QPointer<QTableWidget> tableWidget;
+    QTableWidget *tableWidget;
 
     bool isRowEmpty(int row);
 
