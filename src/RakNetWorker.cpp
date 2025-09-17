@@ -125,9 +125,9 @@ void RakNetWorker::run()
 					ScoreboardDTA.name = playerPool[g_myPlayerID].szPlayerName;
 					ScoreboardDTA.score = playerPool[g_myPlayerID].iScore;
 					ScoreboardDTA.ping = playerPool[g_myPlayerID].dwPing;
-					QMetaObject::invokeMethod(scoreboard_, [=]()
+					QMetaObject::invokeMethod(getMainWindow(), [=]()
 											  { scoreboard_->handlePlayer(ScoreboardDTA); }, Qt::QueuedConnection);
-					QMetaObject::invokeMethod(scoreboard_, [=]()
+					QMetaObject::invokeMethod(getMainWindow(), [=]()
 											  { scoreboard_->updateTableSize(getPlayerCountWoNPC()); }, Qt::QueuedConnection);
 				}
 

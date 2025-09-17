@@ -729,7 +729,7 @@ void UpdateNetwork(RakClientInterface *pRakClient, Packet *pkt)
 				}
 				connectBtn->setText("Connect");
 				Scoreboard *scoreboard_;
-				QMetaObject::invokeMethod(scoreboard_, [=]()
+				QMetaObject::invokeMethod(getMainWindow(), [=]()
 										  { scoreboard_->removePlayer(g_myPlayerID); }, Qt::QueuedConnection);
 			}
 			break;
@@ -774,7 +774,7 @@ void UpdateNetwork(RakClientInterface *pRakClient, Packet *pkt)
 				}
 				connectBtn->setText("Connect");
 				Scoreboard *scoreboard_;
-				QMetaObject::invokeMethod(scoreboard_, [=]()
+				QMetaObject::invokeMethod(getMainWindow(), [=]()
 										  { scoreboard_->removePlayer(g_myPlayerID); }, Qt::QueuedConnection);
 			}
 			break;
@@ -818,7 +818,7 @@ void UpdateNetwork(RakClientInterface *pRakClient, Packet *pkt)
 				}
 				connectBtn->setText("Connect");
 				Scoreboard *scoreboard_;
-				QMetaObject::invokeMethod(scoreboard_, [=]()
+				QMetaObject::invokeMethod(getMainWindow(), [=]()
 										  { scoreboard_->removePlayer(g_myPlayerID); }, Qt::QueuedConnection);
 			}
 			break;
@@ -862,7 +862,7 @@ void UpdateNetwork(RakClientInterface *pRakClient, Packet *pkt)
 				}
 				connectBtn->setText("Connect");
 				Scoreboard *scoreboard_;
-				QMetaObject::invokeMethod(scoreboard_, [=]()
+				QMetaObject::invokeMethod(getMainWindow(), [=]()
 										  { scoreboard_->removePlayer(g_myPlayerID); }, Qt::QueuedConnection);
 			}
 			break;
@@ -906,7 +906,7 @@ void UpdateNetwork(RakClientInterface *pRakClient, Packet *pkt)
 				}
 				connectBtn->setText("Connect");
 				Scoreboard *scoreboard_;
-				QMetaObject::invokeMethod(scoreboard_, [=]()
+				QMetaObject::invokeMethod(getMainWindow(), [=]()
 										  { scoreboard_->removePlayer(g_myPlayerID); }, Qt::QueuedConnection);
 			}
 			break;
@@ -951,7 +951,7 @@ void UpdateNetwork(RakClientInterface *pRakClient, Packet *pkt)
 				}
 				connectBtn->setText("Connect");
 				Scoreboard *scoreboard_;
-				QMetaObject::invokeMethod(scoreboard_, [=]()
+				QMetaObject::invokeMethod(getMainWindow(), [=]()
 										  { scoreboard_->removePlayer(g_myPlayerID); }, Qt::QueuedConnection);
 			}
 			break;
@@ -995,7 +995,7 @@ void UpdateNetwork(RakClientInterface *pRakClient, Packet *pkt)
 				}
 				connectBtn->setText("Connect");
 				Scoreboard *scoreboard_;
-				QMetaObject::invokeMethod(scoreboard_, [=]()
+				QMetaObject::invokeMethod(getMainWindow(), [=]()
 										  { scoreboard_->removePlayer(g_myPlayerID); }, Qt::QueuedConnection);
 			}
 			break;

@@ -58,7 +58,9 @@ void Scoreboard::updateTableSize(int playersCount)
 
 void Scoreboard::handlePlayer(PlayerDTA player)
 {
-    if (tableWidget == nullptr || player.id < 0 || player.id >= tableWidget->rowCount())
+    if (tableWidget == nullptr)
+        return;
+    if (player.id < 0 || player.id >= tableWidget->rowCount())
         return;
 
     if (!isRowEmpty(player.id))
@@ -75,7 +77,9 @@ void Scoreboard::handlePlayer(PlayerDTA player)
 
 bool Scoreboard::removePlayer(int playerid)
 {
-    if (tableWidget == nullptr || playerid < 0 || playerid >= tableWidget->rowCount())
+    if (tableWidget == nullptr)
+        return false;
+    if(playerid < 0 || playerid >= tableWidget->rowCount())
         return false;
 
     if (isRowEmpty(playerid))
