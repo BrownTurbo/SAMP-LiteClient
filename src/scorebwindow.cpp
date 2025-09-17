@@ -35,9 +35,10 @@ Scoreboard::~Scoreboard() {}
 bool Scoreboard::isRowEmpty(int row) {
     if(tableWidget == nullptr)
         return false;
-
-    if (tableWidget->columnCount() == 0)
+    if (tableWidget->isHidden())
         return false;
+    if (tableWidget->columnCount() == 0)
+        return true;
 
     for (int col = 0; col < tableWidget->columnCount(); ++col)
     {
@@ -52,6 +53,8 @@ void Scoreboard::updateTableSize(int playersCount)
 {
     if (tableWidget == nullptr)
         return;
+    if (tableWidget->isHidden())
+        return;
 
     tableWidget->setRowCount(playersCount);
 }
@@ -59,6 +62,8 @@ void Scoreboard::updateTableSize(int playersCount)
 void Scoreboard::handlePlayer(PlayerDTA player)
 {
     if (tableWidget == nullptr)
+        return;
+    if (tableWidget->isHidden())
         return;
     if (player.id < 0 || player.id >= tableWidget->rowCount())
         return;
@@ -79,7 +84,9 @@ bool Scoreboard::removePlayer(int playerid)
 {
     if (tableWidget == nullptr)
         return false;
-    if(playerid < 0 || playerid >= tableWidget->rowCount())
+    if (tableWidget->isHidden())
+        return false;
+    if (playerid < 0 || playerid >= tableWidget->rowCount())
         return false;
 
     if (isRowEmpty(playerid))
