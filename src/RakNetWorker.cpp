@@ -23,12 +23,12 @@ void RakNetWorker::run()
 		{
 			AppendLogF("Failed to load settings");
 			//_logs->Log(LogLevel::ERROR, "Failed to load settings");
-			std::exit(0);
+			QApplication::quit();
 		}
 
 		pRakClient = RakNetworkFactory::GetRakClientInterface();
 		if (pRakClient == NULL)
-			std::exit(0);
+			QApplication::quit();
 
 		pRakClient->SetMTUSize(576);
 
@@ -119,18 +119,16 @@ void RakNetWorker::run()
 					handleProperty(QString::fromUtf8("Player Team"), false, QString::number(playerPool[g_myPlayerID].onfootData.BYTETeam));
 
 					Scoreboard::PlayerDTA ScoreboardDTA;
-					Scoreboard* scoreboard_;
+					Scoreboard *scoreboard_;
 
 					ScoreboardDTA.id = g_myPlayerID;
 					ScoreboardDTA.name = playerPool[g_myPlayerID].szPlayerName;
 					ScoreboardDTA.score = playerPool[g_myPlayerID].iScore;
 					ScoreboardDTA.ping = playerPool[g_myPlayerID].dwPing;
-					QMetaObject::invokeMethod(scoreboard_, [=]() {
-						scoreboard_->handlePlayer(ScoreboardDTA);
-					}, Qt::QueuedConnection);
-					QMetaObject::invokeMethod(scoreboard_, [=]() {
-						scoreboard_->updateTableSize(getPlayerCountWoNPC());
-					}, Qt::QueuedConnection);
+					QMetaObject::invokeMethod(scoreboard_, [=]()
+											  { scoreboard_->handlePlayer(ScoreboardDTA); }, Qt::QueuedConnection);
+					QMetaObject::invokeMethod(scoreboard_, [=]()
+											  { scoreboard_->updateTableSize(getPlayerCountWoNPC()); }, Qt::QueuedConnection);
 				}
 
 				if (settings.iUpdateStats)

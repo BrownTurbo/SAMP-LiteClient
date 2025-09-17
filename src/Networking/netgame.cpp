@@ -50,7 +50,7 @@ void Packet_AUTH_KEY(Packet *p, RakClientInterface *pRakClient)
 		AppendChatBox("Unknown AUTH_IN! (%s)", ((char *)p->data + 2));
 		AppendLogF("Unknown AUTH_IN! (%s), Reconnecting in %d seconds...", ((char *)p->data + 2), iReconnectTime / 1000);
 		_logs->Log(LogLevel::FATAL, "Unknown AUTH_IN! (%s)", ((char *)p->data + 2));
-		std::exit(0);
+		QApplication::quit();
 #endif
 		WorkerClass worker(Globals::instance().getCentralWidget());
 		worker.moveToThread(QApplication::instance()->thread());
@@ -729,9 +729,8 @@ void UpdateNetwork(RakClientInterface *pRakClient, Packet *pkt)
 				}
 				connectBtn->setText("Connect");
 				Scoreboard *scoreboard_;
-				QMetaObject::invokeMethod(scoreboard_, [=]() {
-					scoreboard_->removePlayer(g_myPlayerID);
-				}, Qt::QueuedConnection);
+				QMetaObject::invokeMethod(scoreboard_, [=]()
+										  { scoreboard_->removePlayer(g_myPlayerID); }, Qt::QueuedConnection);
 			}
 			break;
 		case ID_DISCONNECTION_NOTIFICATION:
@@ -775,9 +774,8 @@ void UpdateNetwork(RakClientInterface *pRakClient, Packet *pkt)
 				}
 				connectBtn->setText("Connect");
 				Scoreboard *scoreboard_;
-				QMetaObject::invokeMethod(scoreboard_, [=]() {
-					scoreboard_->removePlayer(g_myPlayerID);
-				}, Qt::QueuedConnection);
+				QMetaObject::invokeMethod(scoreboard_, [=]()
+										  { scoreboard_->removePlayer(g_myPlayerID); }, Qt::QueuedConnection);
 			}
 			break;
 		case ID_CONNECTION_BANNED:
@@ -820,9 +818,8 @@ void UpdateNetwork(RakClientInterface *pRakClient, Packet *pkt)
 				}
 				connectBtn->setText("Connect");
 				Scoreboard *scoreboard_;
-				QMetaObject::invokeMethod(scoreboard_, [=]() {
-					scoreboard_->removePlayer(g_myPlayerID);
-				}, Qt::QueuedConnection);
+				QMetaObject::invokeMethod(scoreboard_, [=]()
+										  { scoreboard_->removePlayer(g_myPlayerID); }, Qt::QueuedConnection);
 			}
 			break;
 		case ID_CONNECTION_ATTEMPT_FAILED:
@@ -865,9 +862,8 @@ void UpdateNetwork(RakClientInterface *pRakClient, Packet *pkt)
 				}
 				connectBtn->setText("Connect");
 				Scoreboard *scoreboard_;
-				QMetaObject::invokeMethod(scoreboard_, [=]() {
-					scoreboard_->removePlayer(g_myPlayerID);
-				}, Qt::QueuedConnection);
+				QMetaObject::invokeMethod(scoreboard_, [=]()
+										  { scoreboard_->removePlayer(g_myPlayerID); }, Qt::QueuedConnection);
 			}
 			break;
 		case ID_NO_FREE_INCOMING_CONNECTIONS:
@@ -910,9 +906,8 @@ void UpdateNetwork(RakClientInterface *pRakClient, Packet *pkt)
 				}
 				connectBtn->setText("Connect");
 				Scoreboard *scoreboard_;
-				QMetaObject::invokeMethod(scoreboard_, [=]() {
-					scoreboard_->removePlayer(g_myPlayerID);
-				}, Qt::QueuedConnection);
+				QMetaObject::invokeMethod(scoreboard_, [=]()
+										  { scoreboard_->removePlayer(g_myPlayerID); }, Qt::QueuedConnection);
 			}
 			break;
 		case ID_INVALID_PASSWORD:
@@ -956,9 +951,8 @@ void UpdateNetwork(RakClientInterface *pRakClient, Packet *pkt)
 				}
 				connectBtn->setText("Connect");
 				Scoreboard *scoreboard_;
-				QMetaObject::invokeMethod(scoreboard_, [=]() {
-					scoreboard_->removePlayer(g_myPlayerID);
-				}, Qt::QueuedConnection);
+				QMetaObject::invokeMethod(scoreboard_, [=]()
+										  { scoreboard_->removePlayer(g_myPlayerID); }, Qt::QueuedConnection);
 			}
 			break;
 		case ID_CONNECTION_LOST:
@@ -1000,10 +994,9 @@ void UpdateNetwork(RakClientInterface *pRakClient, Packet *pkt)
 					break;
 				}
 				connectBtn->setText("Connect");
-				Scoreboard* scoreboard_;
-				QMetaObject::invokeMethod(scoreboard_, [=]() {
-					scoreboard_->removePlayer(g_myPlayerID);
-				}, Qt::QueuedConnection);
+				Scoreboard *scoreboard_;
+				QMetaObject::invokeMethod(scoreboard_, [=]()
+										  { scoreboard_->removePlayer(g_myPlayerID); }, Qt::QueuedConnection);
 			}
 			break;
 		case ID_CONNECTION_REQUEST_ACCEPTED:

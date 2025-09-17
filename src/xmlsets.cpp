@@ -13,13 +13,12 @@ int LoadSettings()
 	if (filePath == nullptr)
 	{
 		fprintf(stderr, "Failed to allocate memory for filePath\n");
-		std::exit(0);
+		QApplication::quit();
 	}
 	if (!xmlSettings.LoadFile(filePath))
 	{
 		WorkerClass worker(Globals::instance().getCentralWidget());
-		emit worker.MessageBox(QString::fromUtf8("Error"), QString::fromUtf8("Failed to load the config file"), QMessageBox::Ok, QMessageBox::Critical);
-		std::exit(0);
+		emit worker.MessageBox(QString::fromUtf8("Error"), QString::fromUtf8("Failed to load the config file"), QMessageBox::Ok, QMessageBox::Critical, nullptr, ZMessageBox::Exit);
 	}
 
 	TiXmlElement *rakSAMPElement = xmlSettings.FirstChildElement("LiteSAMP");
