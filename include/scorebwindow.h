@@ -11,6 +11,7 @@
 #include <QtWidgets/QHeaderView>
 #include <QtCore/QStringList>
 #include <QtWidgets/QHeaderView>
+#include <QtCore/QPointer>
 #include <cstdlib>
 
 #include "./globals.h"
