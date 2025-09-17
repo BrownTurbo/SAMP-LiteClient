@@ -24,7 +24,7 @@ public:
     ~Scoreboard();
 
 private:
-    QTableWidget *tableWidget;
+    QPointer<QTableWidget> tableWidget;
 
     bool isRowEmpty(int row);
 
