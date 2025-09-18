@@ -50,7 +50,7 @@ void Packet_AUTH_KEY(Packet *p, RakClientInterface *pRakClient)
 		AppendChatBox("Unknown AUTH_IN! (%s)", ((char *)p->data + 2));
 		AppendLogF("Unknown AUTH_IN! (%s), Reconnecting in %d seconds...", ((char *)p->data + 2), iReconnectTime / 1000);
 		_logs->Log(LogLevel::FATAL, "Unknown AUTH_IN! (%s)", ((char *)p->data + 2));
-		QApplication::quit();
+		//QApplication::quit();
 #endif
 		WorkerClass worker(Globals::instance().getCentralWidget());
 		worker.moveToThread(QApplication::instance()->thread());

@@ -23,12 +23,12 @@ void RakNetWorker::run()
 		{
 			AppendLogF("Failed to load settings");
 			//_logs->Log(LogLevel::ERROR, "Failed to load settings");
-			QApplication::quit();
+			QApplication::exit(1);
 		}
 
 		pRakClient = RakNetworkFactory::GetRakClientInterface();
 		if (pRakClient == NULL)
-			QApplication::quit();
+			QApplication::exit(1);
 
 		pRakClient->SetMTUSize(576);
 

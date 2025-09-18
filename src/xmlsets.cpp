@@ -13,7 +13,7 @@ int LoadSettings()
 	if (filePath == nullptr)
 	{
 		fprintf(stderr, "Failed to allocate memory for filePath\n");
-		QApplication::quit();
+		QApplication::exit(1);
 	}
 	tinyxml2::XMLError xmlErr = xmlSettings->LoadFile(filePath);
 	if (xmlErr != tinyxml2::XML_SUCCESS)
@@ -26,6 +26,7 @@ int LoadSettings()
 			emit worker.MessageBox(QString::fromUtf8("Error"), QString::fromUtf8(ErrMsg), QMessageBox::Ok, QMessageBox::Critical, nullptr, ZMessageBox::Exit);
 			free(ErrMsg);
 		}
+		return 0;
 	}
 
 	tinyxml2::XMLElement *rakSAMPElement = xmlSettings->FirstChildElement("LiteSAMP");
