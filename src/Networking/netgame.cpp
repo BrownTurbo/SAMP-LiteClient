@@ -829,7 +829,7 @@ void UpdateNetwork(RakClientInterface *pRakClient, Packet *pkt)
 		case ID_CONNECTION_ATTEMPT_FAILED:
 			if (pRakClient == ::pRakClient)
 			{
-				if (GetGameState() == GAMESTATE_DISCONNECTION_REQUESTED)
+				if (GetGameState() != GAMESTATE_DISCONNECTION_REQUESTED)
 				{
 					ToggleChatBox();
 					ToggleSendButton();
