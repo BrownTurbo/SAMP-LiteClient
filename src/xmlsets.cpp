@@ -1,7 +1,7 @@
 #include "../include/xmlsets.h"
 
 struct stSettings settings;
-tinyxml2::XMLDocument *xmlSettings;
+tinyxml2::XMLDocument *xmlSettings = new tinyxml2::XMLDocument();
 
 int LoadSettings()
 {
@@ -16,7 +16,7 @@ int LoadSettings()
 		QApplication::quit();
 	}
 	tinyxml2::XMLError xmlErr = xmlSettings->LoadFile(filePath);
-	if (xmlErr != 0)
+	if (xmlErr != tinyxml2::XML_SUCCESS)
 	{
 		WorkerClass worker(Globals::instance().getCentralWidget());
 		char *ErrMsg = (char *)malloc(70);
@@ -24,7 +24,7 @@ int LoadSettings()
 		if (ErrMsg != nullptr)
 		{
 			emit worker.MessageBox(QString::fromUtf8("Error"), QString::fromUtf8(ErrMsg), QMessageBox::Ok, QMessageBox::Critical, nullptr, ZMessageBox::Exit);
-			delete ErrMsg;
+			free(ErrMsg);
 		}
 	}
 
@@ -87,6 +87,7 @@ int LoadSettings()
 
 	xmlSettings->Clear();
 	free(filePath);
+	delete xmlSettings;
 
 	return 1;
 }
