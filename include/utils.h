@@ -62,6 +62,7 @@ QString removeMarkupTags(QString &text);
 bool ToggleChatBox();
 bool ToggleSendButton();
 bool TogglePlaybackButton();
+bool ToggleAudioButton();
 
 bool startsWith(const char *text, const char *prefix);
 

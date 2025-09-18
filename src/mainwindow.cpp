@@ -115,12 +115,14 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent) {
     pauseButton->setIcon(QIcon(GetPath("resources/img/audio-pause.png")));
     pauseButton->setToolTip(QString::fromUtf8("Pause"));
     pauseButton->setCursor(Qt::PointingHandCursor);
+    pauseButton->setEnabled(false);
     stopButton = new QPushButton(centralwidget);
     stopButton->setObjectName(QString::fromUtf8("stopButton"));
     stopButton->setGeometry(QRect(1130, 560, 20, 20));
     stopButton->setIcon(QIcon(GetPath("resources/img/audio-stop.png")));
     stopButton->setToolTip(QString::fromUtf8("Stop"));
     stopButton->setCursor(Qt::PointingHandCursor);
+    stopButton->setEnabled(false);
     audioCButton = new QPushButton(centralwidget);
     audioCButton->setObjectName(QString::fromUtf8("audioCButton"));
     audioCButton->setGeometry(QRect(1100, 560, 20, 20));
@@ -128,6 +130,7 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent) {
     audioCButton->setIcon(QIcon(GetPath("resources/img/volume-mute.png")));
     //audioCButton->setIconSize(QSize(65, 65));
     audioCButton->setCursor(Qt::PointingHandCursor);
+    audioCButton->setEnabled(false);
     actionsButton = new QPushButton(centralwidget);
     actionsButton->setObjectName(QString::fromUtf8("actionsButton"));
     actionsButton->setGeometry(QRect(1090, 490, 80, 30));
@@ -144,7 +147,7 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent) {
     playbackbtn->setSizePolicy(sizePolicy);
     playbackbtn->setAutoDefault(false);
     playbackbtn->setFlat(false);
-    playbackbtn->setIcon(QIcon(GetPath("resources/img/scoreboard.png")));
+    playbackbtn->setIcon(QIcon(GetPath("resources/img/playback.png")));
     playbackbtn->setIconSize(QSize(22, 22));
     playbackbtn->setText(QString::fromUtf8("Playback"));
     playbackbtn->setCursor(Qt::PointingHandCursor);
@@ -210,6 +213,24 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent) {
     Globals::instance().setCentralWidget(this->centralWidget());
 
     Globals::instance().setPropertiesTree(QSharedPointer<QStandardItemModel>(treeVmodel, [](QStandardItemModel* ptr) {
+        if (ptr && !ptr->parent())
+            ptr->deleteLater();
+    }));
+
+    Globals::instance().setStopAudioButton(QSharedPointer<QPushButton>(stopButton, [](QPushButton *ptr)
+    {
+        if (ptr && !ptr->parent())
+            ptr->deleteLater();
+    }));
+
+    Globals::instance().setPauseAudioButton(QSharedPointer<QPushButton>(pauseButton, [](QPushButton *ptr)
+    {
+        if (ptr && !ptr->parent())
+            ptr->deleteLater();
+    }));
+
+    Globals::instance().setMuteAudioButton(QSharedPointer<QPushButton>(audioCButton, [](QPushButton *ptr)
+    {
         if (ptr && !ptr->parent())
             ptr->deleteLater();
     }));

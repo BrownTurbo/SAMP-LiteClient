@@ -129,6 +129,7 @@ void Packet_ConnectionSucceeded(Packet *p, RakClientInterface *pRakClient)
 	ToggleChatBox();
 	ToggleSendButton();
 	TogglePlaybackButton();
+	ToggleAudioButton();
 
 	QSharedPointer<QPushButton> _connectBtn = Globals::instance().getConnectButton();
 	if (_connectBtn.isNull())
@@ -713,6 +714,7 @@ void UpdateNetwork(RakClientInterface *pRakClient, Packet *pkt)
 				ToggleChatBox();
 				ToggleSendButton();
 				TogglePlaybackButton();
+				ToggleAudioButton();
 				emit worker.setStateMessage("Disconnected.");
 
 				QSharedPointer<QPushButton> _connectBtn = Globals::instance().getConnectButton();
@@ -758,6 +760,7 @@ void UpdateNetwork(RakClientInterface *pRakClient, Packet *pkt)
 				ToggleChatBox();
 				ToggleSendButton();
 				TogglePlaybackButton();
+				ToggleAudioButton();
 				emit worker.setStateMessage("Disconnected.");
 
 				QSharedPointer<QPushButton> _connectBtn = Globals::instance().getConnectButton();
@@ -802,6 +805,7 @@ void UpdateNetwork(RakClientInterface *pRakClient, Packet *pkt)
 				ToggleChatBox();
 				ToggleSendButton();
 				TogglePlaybackButton();
+				ToggleAudioButton();
 				emit worker.setStateMessage("Disconnected.");
 
 				QSharedPointer<QPushButton> _connectBtn = Globals::instance().getConnectButton();
@@ -843,9 +847,13 @@ void UpdateNetwork(RakClientInterface *pRakClient, Packet *pkt)
 				SetGameState(GAMESTATE_DISCONNECTED);
 #endif
 				emit worker.MessageBox(QString::fromUtf8("Error"), QString::fromUtf8("[SAMP] Connection attempt failed."), QMessageBox::Ok, QMessageBox::Critical);
-				ToggleChatBox();
-				ToggleSendButton();
-				TogglePlaybackButton();
+				if (GetGameState() == GAMESTATE_DISCONNECTION_REQUESTED)
+				{
+					ToggleChatBox();
+					ToggleSendButton();
+					TogglePlaybackButton();
+					ToggleAudioButton();
+				}
 				emit worker.setStateMessage("Disconnected.");
 
 				QSharedPointer<QPushButton> _connectBtn = Globals::instance().getConnectButton();
@@ -890,6 +898,7 @@ void UpdateNetwork(RakClientInterface *pRakClient, Packet *pkt)
 				ToggleChatBox();
 				ToggleSendButton();
 				TogglePlaybackButton();
+				ToggleAudioButton();
 				emit worker.setStateMessage("Disconnected.");
 
 				QSharedPointer<QPushButton> _connectBtn = Globals::instance().getConnectButton();
@@ -935,6 +944,7 @@ void UpdateNetwork(RakClientInterface *pRakClient, Packet *pkt)
 				ToggleChatBox();
 				ToggleSendButton();
 				TogglePlaybackButton();
+				ToggleAudioButton();
 				emit worker.setStateMessage("Disconnected.");
 
 				QSharedPointer<QPushButton> _connectBtn = Globals::instance().getConnectButton();
@@ -979,6 +989,7 @@ void UpdateNetwork(RakClientInterface *pRakClient, Packet *pkt)
 				ToggleChatBox();
 				ToggleSendButton();
 				TogglePlaybackButton();
+				ToggleAudioButton();
 				emit worker.setStateMessage("Disconnected.");
 
 				QSharedPointer<QPushButton> _connectBtn = Globals::instance().getConnectButton();

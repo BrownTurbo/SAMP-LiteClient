@@ -407,6 +407,58 @@ bool TogglePlaybackButton()
     return true;
 }
 
+bool ToggleAudioButton()
+{
+    QSharedPointer<QPushButton> _muteAudioBtn = Globals::instance().getMuteAudioButton();
+    if (_muteAudioBtn.isNull())
+    {
+        qWarning() << "_muteAudioBtn is not a valid pointer";
+        return false;
+    }
+    QPushButton *muteButton = _muteAudioBtn.get();
+    if (muteButton == nullptr || muteButton->parent() == nullptr)
+    {
+        qWarning() << "QPushButton instance is not valid.";
+        return false;
+    }
+    QMetaObject::invokeMethod(getMainWindow(), [muteButton]() {
+        muteButton->setEnabled(!muteButton->isEnabled());
+    }, Qt::QueuedConnection);
+
+    QSharedPointer<QPushButton> _stopAudioBtn = Globals::instance().getStopAudioButton();
+    if (_stopAudioBtn.isNull())
+    {
+        qWarning() << "_stopAudioBtn is not a valid pointer";
+        return false;
+    }
+    QPushButton *stopButton = _stopAudioBtn.get();
+    if (stopButton == nullptr || stopButton->parent() == nullptr)
+    {
+        qWarning() << "QPushButton instance is not valid.";
+        return false;
+    }
+    QMetaObject::invokeMethod(getMainWindow(), [stopButton]() {
+        stopButton->setEnabled(!stopButton->isEnabled());
+    }, Qt::QueuedConnection);
+
+    QSharedPointer<QPushButton> _pauseAudioBtn = Globals::instance().getPauseAudioButton();
+    if (_pauseAudioBtn.isNull())
+    {
+        qWarning() << "_pauseAudioBtn is not a valid pointer";
+        return false;
+    }
+    QPushButton *pauseButton = _pauseAudioBtn.get();
+    if (pauseButton == nullptr || pauseButton->parent() == nullptr)
+    {
+        qWarning() << "QPushButton instance is not valid.";
+        return false;
+    }
+    QMetaObject::invokeMethod(getMainWindow(), [pauseButton]() {
+        pauseButton->setEnabled(!pauseButton->isEnabled());
+    }, Qt::QueuedConnection);
+    return true;
+}
+
 bool startsWith(const char* text, const char* prefix)
 {
     if(text == nullptr || prefix == nullptr)

@@ -160,6 +160,7 @@ void sampDisconnect(int iTimeout)
 	ToggleChatBox();
 	ToggleSendButton();
 	TogglePlaybackButton();
+	ToggleAudioButton();
 	AppendChatBox("Disconnected.");
 	AppendLogF("Disconnected.");
 	_logs->Log(LogLevel::INFO, "Disconnected.");
@@ -190,6 +191,10 @@ void sampDisconnect(int iTimeout)
 		return;
 	}
 	connectBtn->setText("Connect");
+	ToggleChatBox();
+	ToggleSendButton();
+	TogglePlaybackButton();
+	ToggleAudioButton();
 }
 
 void sampRequestClass(int iClass)

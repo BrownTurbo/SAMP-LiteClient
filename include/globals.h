@@ -254,6 +254,60 @@ public:
         locker.unlock();
     }
 
+    QSharedPointer<QPushButton> getStopAudioButton() const
+    {
+        if (stopAudioBtn.isNull())
+        {
+            qWarning() << "stopAudioBtn is uninitialized!";
+            return nullptr;
+        }
+        qDebug() << "QPushButton Pointer:" << static_cast<void *>(stopAudioBtn.data());
+        return stopAudioBtn;
+    }
+
+    void setStopAudioButton(const QSharedPointer<QPushButton> _stopAudioBtn)
+    {
+        QMutexLocker locker(&mutex_);
+        stopAudioBtn = _stopAudioBtn;
+        locker.unlock();
+    }
+
+    QSharedPointer<QPushButton> getPauseAudioButton() const
+    {
+        if (pauseAudioBtn.isNull())
+        {
+            qWarning() << "pauseAudioBtn is uninitialized!";
+            return nullptr;
+        }
+        qDebug() << "QPushButton Pointer:" << static_cast<void *>(pauseAudioBtn.data());
+        return pauseAudioBtn;
+    }
+
+    void setPauseAudioButton(const QSharedPointer<QPushButton> _pauseAudioBtn)
+    {
+        QMutexLocker locker(&mutex_);
+        pauseAudioBtn = _pauseAudioBtn;
+        locker.unlock();
+    }
+
+    QSharedPointer<QPushButton> getMuteAudioButton() const
+    {
+        if (muteAudioBtn.isNull())
+        {
+            qWarning() << "muteAudioBtn is uninitialized!";
+            return nullptr;
+        }
+        qDebug() << "QPushButton Pointer:" << static_cast<void *>(muteAudioBtn.data());
+        return muteAudioBtn;
+    }
+
+    void setMuteAudioButton(const QSharedPointer<QPushButton> _muteAudioBtn)
+    {
+        QMutexLocker locker(&mutex_);
+        muteAudioBtn = _muteAudioBtn;
+        locker.unlock();
+    }
+
 private:
     Globals() : TXTDLog(nullptr), GNRLLog(nullptr), srvMaxPlayers(0), AudioVolume(0), CentralWidget(nullptr) {}
     ~Globals() {}
@@ -277,8 +331,10 @@ private:
     QSharedPointer<QPushButton> sendBtn;
     QSharedPointer<QPushButton> connectBtn;
     QSharedPointer<QPushButton> playbackBtn;
+    QSharedPointer<QPushButton> stopAudioBtn;
+    QSharedPointer<QPushButton> pauseAudioBtn;
+    QSharedPointer<QPushButton> muteAudioBtn;
 
     QMutex mutex_;
-
 };
 #endif
