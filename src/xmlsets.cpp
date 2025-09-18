@@ -1,7 +1,7 @@
 #include "../include/xmlsets.h"
 
 struct stSettings settings;
-TiXmlDocument xmlSettings;
+tinyxml2::XMLDocument *xmlSettings;
 
 int LoadSettings()
 {
@@ -15,13 +15,20 @@ int LoadSettings()
 		fprintf(stderr, "Failed to allocate memory for filePath\n");
 		QApplication::quit();
 	}
-	if (!xmlSettings.LoadFile(filePath))
+	tinyxml2::XMLError xmlErr = xmlSettings->LoadFile(filePath);
+	if (xmlErr != 0)
 	{
 		WorkerClass worker(Globals::instance().getCentralWidget());
-		emit worker.MessageBox(QString::fromUtf8("Error"), QString::fromUtf8("Failed to load the config file"), QMessageBox::Ok, QMessageBox::Critical, nullptr, ZMessageBox::Exit);
+		char *ErrMsg = (char *)malloc(70);
+		sprintf(ErrMsg, "Failed to load the config file : %s", xmlSettings->ErrorIDToName(xmlErr));
+		if (ErrMsg != nullptr)
+		{
+			emit worker.MessageBox(QString::fromUtf8("Error"), QString::fromUtf8(ErrMsg), QMessageBox::Ok, QMessageBox::Critical, nullptr, ZMessageBox::Exit);
+			delete ErrMsg;
+		}
 	}
 
-	TiXmlElement *rakSAMPElement = xmlSettings.FirstChildElement("LiteSAMP");
+	tinyxml2::XMLElement *rakSAMPElement = xmlSettings->FirstChildElement("LiteSAMP");
 	if (rakSAMPElement)
 	{
 		// get RespawnTick
@@ -50,7 +57,7 @@ int LoadSettings()
 		rakSAMPElement->QueryFloatAttribute("followZOffset", &settings.fFollowZOffset);*/
 
 		// get the first server
-		TiXmlElement *serverElement = rakSAMPElement->FirstChildElement("server");
+		tinyxml2::XMLElement *serverElement = rakSAMPElement->FirstChildElement("server");
 		if (serverElement)
 		{
 			char *pszAddr = (char *)serverElement->GetText();
@@ -78,7 +85,7 @@ int LoadSettings()
 		}
 	}
 
-	xmlSettings.Clear();
+	xmlSettings->Clear();
 	free(filePath);
 
 	return 1;

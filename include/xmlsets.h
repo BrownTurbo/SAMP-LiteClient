@@ -5,7 +5,9 @@
 #include <arpa/inet.h>
 #include <cstdlib>
 
-#include "../lib/tinyxml/tinyxml.h"
+#include <QtCore/QString>
+
+#include "../lib/tinyxml/tinyxml2.h"
 
 #include "utils.h"
 #include "common.h"
