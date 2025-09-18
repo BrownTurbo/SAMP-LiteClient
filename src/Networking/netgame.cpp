@@ -829,6 +829,13 @@ void UpdateNetwork(RakClientInterface *pRakClient, Packet *pkt)
 		case ID_CONNECTION_ATTEMPT_FAILED:
 			if (pRakClient == ::pRakClient)
 			{
+				if (GetGameState() == GAMESTATE_DISCONNECTION_REQUESTED)
+				{
+					ToggleChatBox();
+					ToggleSendButton();
+					TogglePlaybackButton();
+					ToggleAudioButton();
+				}
 #if RECONNECT_ON_ERROR == 1
 				AppendChatBox("[<b>%02d:%02d:%02d</b>] Connection attempt failed. Reconnecting in %d seconds.",
 							  localTime->tm_hour, localTime->tm_min, localTime->tm_sec, iReconnectTime / 1000);
@@ -847,13 +854,6 @@ void UpdateNetwork(RakClientInterface *pRakClient, Packet *pkt)
 				SetGameState(GAMESTATE_DISCONNECTED);
 #endif
 				emit worker.MessageBox(QString::fromUtf8("Error"), QString::fromUtf8("[SAMP] Connection attempt failed."), QMessageBox::Ok, QMessageBox::Critical);
-				if (GetGameState() == GAMESTATE_DISCONNECTION_REQUESTED)
-				{
-					ToggleChatBox();
-					ToggleSendButton();
-					TogglePlaybackButton();
-					ToggleAudioButton();
-				}
 				emit worker.setStateMessage("Disconnected.");
 
 				QSharedPointer<QPushButton> _connectBtn = Globals::instance().getConnectButton();
