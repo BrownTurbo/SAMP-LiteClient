@@ -82,6 +82,7 @@ private:
     QPushButton *audioCButton;
     QPushButton *actionsButton;
     QPushButton *playbackbtn;
+    QPushButton *serversList;
 
     LogsWindow *logsWindow = nullptr;
     SettingsWindow *settingsWindow = nullptr;

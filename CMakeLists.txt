@@ -41,6 +41,7 @@ set(SOURCES
     src/settingswindow.cpp
     src/connectwindow.cpp
     src/playbackwindow.cpp
+    src/serverswindow.cpp
     src/math_stuff.cpp
     src/Networking/netgame.cpp
     src/Networking/netrpc.cpp
@@ -70,6 +71,7 @@ set(HEADERS
     include/settingswindow.h
     include/connectwindow.h
     include/playbackwindow.h
+    include/serverswindow.h
     include/CVector.h
     include/math_stuff.h
     include/Networking/netgame.h

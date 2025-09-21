@@ -3,7 +3,7 @@
 struct stSettings settings;
 tinyxml2::XMLDocument *xmlSettings = new tinyxml2::XMLDocument();
 
-int LoadSettings()
+void LoadSettings()
 {
 	// load
 	size_t filePathSize = strlen(ROOT_PATH) + strlen("/config.xml") + 1;
@@ -23,10 +23,10 @@ int LoadSettings()
 		sprintf(ErrMsg, "Failed to load the config file : %s", xmlSettings->ErrorIDToName(xmlErr));
 		if (ErrMsg != nullptr)
 		{
-			emit worker.MessageBox(QString::fromUtf8("Error"), QString::fromUtf8(ErrMsg), QMessageBox::Ok, QMessageBox::Critical, nullptr, ZMessageBox::Exit);
+			emit worker.MessageBox(QString::fromUtf8("Error"), QString::fromUtf8(ErrMsg), QMessageBox::Ok, QMessageBox::Critical);
 			free(ErrMsg);
 		}
-		return 0;
+		QApplication::exit(1);
 	}
 
 	tinyxml2::XMLElement *rakSAMPElement = xmlSettings->FirstChildElement("LiteSAMP");
@@ -89,28 +89,19 @@ int LoadSettings()
 	xmlSettings->Clear();
 	free(filePath);
 	delete xmlSettings;
-
-	return 1;
 }
 
-int UnLoadSettings()
+void UnLoadSettings()
 {
 	memset(&settings, 0, sizeof(settings));
-
-	return 1;
 }
 
-int ReloadSettings()
+void ReloadSettings()
 {
-	if (UnLoadSettings() && LoadSettings())
-	{
-		AppendLogF("Settings reloaded");
-		_logs->Log(LogLevel::DEBUG, "Settings reloaded");
-		return 1;
-	}
-
-	AppendLogF("Failed to reload settings");
-	_logs->Log(LogLevel::DEBUG, "Failed to reload settings");
-
-	return 0;
+	UnLoadSettings();
+	AppendLogF("Settings unloaded");
+	_logs->Log(LogLevel::DEBUG, "Settings unloaded");
+	LoadSettings();
+	AppendLogF("Settings reloaded");
+	_logs->Log(LogLevel::DEBUG, "Settings reloaded");
 }

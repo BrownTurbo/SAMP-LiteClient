@@ -49,7 +49,7 @@ struct stSettings
 };
 extern struct stSettings settings;
 
-int LoadSettings();
-int UnLoadSettings();
-int ReloadSettings();
+void LoadSettings();
+void UnLoadSettings();
+void ReloadSettings();
 #endif

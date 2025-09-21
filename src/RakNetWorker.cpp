@@ -19,12 +19,7 @@ void RakNetWorker::run()
 		int iLastStatsUpdate = GetTickCount();
 		uint32_t dwAutoRunTick = GetTickCount();
 
-		if (!LoadSettings())
-		{
-			AppendLogF("Failed to load settings");
-			//_logs->Log(LogLevel::ERROR, "Failed to load settings");
-			QApplication::exit(1);
-		}
+		LoadSettings();
 
 		pRakClient = RakNetworkFactory::GetRakClientInterface();
 		if (pRakClient == NULL)
