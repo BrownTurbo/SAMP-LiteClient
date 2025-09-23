@@ -30,6 +30,7 @@
 #include "settingswindow.h"
 #include "connectwindow.h"
 #include "playbackwindow.h"
+#include "serverswindow.h"
 #include "scorebwindow.h"
 
 #include "globals.h"
@@ -56,6 +57,7 @@ private slots:
     void showConnectWindow();
     void showScoreBoardWindow();
     void showPlaybackWindow();
+    void showServerLWindow();
 
     void onAudioPauseClicked();
     void onAudioStopClicked();
@@ -89,6 +91,7 @@ private:
     ConnectWindow *connectWindow = nullptr;
     PlaybackWindow *playbackWindow = nullptr;
     Scoreboard *scoreboardWindow = nullptr;
+    ServersList *serverlstWindow = nullptr;
 
     RakNetWorker *Nworker;
 

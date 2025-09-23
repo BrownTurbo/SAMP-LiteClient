@@ -175,6 +175,7 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent) {
     this->connect(rootbtn, &QPushButton::clicked, this, &MainWindow::showConnectWindow);
     this->connect(scoreboardbtn, &QPushButton::clicked, this, &MainWindow::showScoreBoardWindow);
     this->connect(playbackbtn, &QPushButton::clicked, this, &MainWindow::showPlaybackWindow);
+    this->connect(serversList, &QPushButton::clicked, this, &MainWindow::showServerLWindow);
 
     // Threading shit!!
     threadManager = new ThreadManager(3);
@@ -278,6 +279,12 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent) {
     centerOverParent(scoreboardWindow, this);
     scoreboardWindow->show();
     scoreboardWindow->hide();
+
+    if (!serverlstWindow)
+        serverlstWindow = new ServersList(this);
+    centerOverParent(serverlstWindow, this);
+    serverlstWindow->show();
+    serverlstWindow->hide();
 
     // SAMP...
     Nworker = new RakNetWorker();
@@ -400,6 +407,22 @@ void MainWindow::showPlaybackWindow()
     dock->setFloating(true);
     dock->setAllowedAreas(Qt::NoDockWidgetArea);
     dock->resize(playbackWindow->sizeHint());
+
+    centerOverParent(dock, this);
+    dock->show();
+}
+
+void MainWindow::showServerLWindow()
+{
+    if (!serverlstWindow)
+        serverlstWindow = new ServersList(this);
+
+    QDockWidget *dock = new QDockWidget("Servers List", this);
+    dock->setWidget(serverlstWindow);
+    dock->setFeatures(QDockWidget::DockWidgetClosable | QDockWidget::DockWidgetMovable | QDockWidget::DockWidgetFloatable);
+    dock->setFloating(true);
+    dock->setAllowedAreas(Qt::NoDockWidgetArea);
+    dock->resize(serverlstWindow->sizeHint());
 
     centerOverParent(dock, this);
     dock->show();

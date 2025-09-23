@@ -13,6 +13,7 @@
 #include <QtWidgets/QTableWidget>
 #include <QtWidgets/QWidget>
 #include <QtWidgets/QVBoxLayout>
+#include <QtWidgets/QHBoxLayout>
 
 #include "./globals.h"
 
@@ -29,7 +30,7 @@ private:
     QFrame *serverLine;
     QPushButton *SaveBtn;
     QPushButton *CancelBtn;
-    QWidget *srvWidget;
+    QWidget *mainWidget;
     QLineEdit *lineEdit;
     QLabel *label;
 };

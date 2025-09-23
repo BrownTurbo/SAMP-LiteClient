@@ -12,13 +12,18 @@ ServersList::ServersList(QWidget *parent) : QDialog(parent)
     if (this->objectName().isEmpty())
         this->setObjectName(QString::fromUtf8("ServersLWidget"));
 
-    QVBoxLayout *layout = new QVBoxLayout(this);
+    QVBoxLayout *VLayout = new QVBoxLayout(this);
+    VLayout->addStretch();
+    QHBoxLayout *HLayout_ = new QHBoxLayout(this);
+    HLayout_->addStretch();
+    QHBoxLayout *HLayout = new QHBoxLayout(this);
+    HLayout->addStretch();
     serverL = new QTableWidget(this);
     if (serverL->columnCount() < 3)
         serverL->setColumnCount(3);
     QFont font;
     font.setBold(true);
-    font.setWeight(QFont::Weight::Bold);    
+    font.setWeight(QFont::Weight::Bold);
     QTableWidgetItem *__qtablewidgetitem = new QTableWidgetItem();
     __qtablewidgetitem->setTextAlignment(Qt::AlignCenter);
     __qtablewidgetitem->setFont(font);
@@ -61,20 +66,23 @@ ServersList::ServersList(QWidget *parent) : QDialog(parent)
     CancelBtn->setGeometry(QRect(470, 320, 80, 30));
     CancelBtn->setFlat(false);
     CancelBtn->setText(QString::fromUtf8("Cancel"));
-    srvWidget = new QWidget(this);
-    srvWidget->setObjectName(QString::fromUtf8("srvWidget"));
-    srvWidget->setGeometry(QRect(307, 10, 336, 301));
-    lineEdit = new QLineEdit(srvWidget);
+    lineEdit = new QLineEdit(this);
     lineEdit->setObjectName(QString::fromUtf8("lineEdit"));
     lineEdit->setGeometry(QRect(100, 10, 271, 30));
     lineEdit->setText(QString::fromUtf8("127.0.0.1:7777"));
-    label = new QLabel(srvWidget);
+    label = new QLabel(this);
     label->setObjectName(QString::fromUtf8("label"));
     label->setGeometry(QRect(10, 10, 91, 22));
     label->setText(QString::fromUtf8("IP Address:"));
-    layout->addWidget(serverL);
-    layout->addWidget(srvWidget);
-    this->setLayout(layout);
+    HLayout_->addWidget(serverL);
+    HLayout_->addWidget(label);
+    HLayout_->addWidget(lineEdit);
+    VLayout->addLayout(HLayout_);
+    HLayout->addWidget(serverLine);
+    HLayout->addWidget(SaveBtn);
+    HLayout->addWidget(CancelBtn);
+    VLayout->addLayout(HLayout);
+    this->setLayout(VLayout);
 
     QMetaObject::connectSlotsByName(this);
 }
