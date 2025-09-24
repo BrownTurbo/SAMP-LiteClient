@@ -30,7 +30,6 @@ private:
     QFrame *serverLine;
     QPushButton *SaveBtn;
     QPushButton *CancelBtn;
-    QWidget *mainWidget;
     QLineEdit *lineEdit;
     QLabel *label;
 };
