@@ -87,9 +87,9 @@ ServersList::ServersList(QWidget *parent) : QDialog(parent)
     label->setFixedWidth(91);
     label->setFixedHeight(22);
     label->setText(QString::fromUtf8("IP Address:"));
-    HLayout_->addWidget(serverL);
-    HLayout_->addWidget(label);
-    HLayout_->addWidget(lineEdit);
+    HLayout_->addWidget(serverL, 1, Qt::AlignmentFlag::AlignTop);
+    HLayout_->addWidget(label, 0, Qt::AlignmentFlag::AlignTop);
+    HLayout_->addWidget(lineEdit, 0, Qt::AlignmentFlag::AlignTop);
     VLayout->addLayout(HLayout_);
     HLayout->addWidget(serverLine);
     HLayout->addWidget(SaveBtn);
