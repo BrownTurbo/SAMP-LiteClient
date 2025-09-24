@@ -26,6 +26,9 @@ public:
     ~ServersList();
 
 private:
+    void onSavePressed();
+    void onCancelPressed();
+
     QTableWidget *serverL;
     QFrame *serverLine;
     QPushButton *SaveBtn;

@@ -97,20 +97,20 @@ ServersList::ServersList(QWidget *parent) : QDialog(parent)
     VLayout->addLayout(HLayout);
     this->setLayout(VLayout);
 
-    this->connect(SaveBtn, &QPushButton::clicked, this, &PlaybackWindow::onSavePressed);
-    this->connect(CancelBtn, &QPushButton::clicked, this, &PlaybackWindow::onCancelPressed);
+    this->connect(SaveBtn, &QPushButton::clicked, this, &ServersList::onSavePressed);
+    this->connect(CancelBtn, &QPushButton::clicked, this, &ServersList::onCancelPressed);
 
     QMetaObject::connectSlotsByName(this);
 }
 
 ServersList::~ServersList() {}
 
-void onSavePressed()
+void ServersList::onSavePressed()
 {
     //
 }
 
-void onCancelPressed()
+void ServersList::onCancelPressed()
 {
     this->close();
 }
