@@ -23,8 +23,20 @@
 #include "xmlsets.h"
 
 #include <cstring>
+#include <functional>
 
-int __MessageBox(const QString title, const QString message, QMessageBox::StandardButtons buttons, QMessageBox::Icon icon, QWidget* widget);
+#if !defined ZMessageBox__
+#define ZMessageBox__
+enum class ZMessageBox
+{
+    Exit,
+    Nothing,
+    Async
+};
+#endif
+
+int __MessageBox(const QString title, const QString message, QMessageBox::StandardButtons buttons, QMessageBox::Icon icon, QWidget *widget, ZMessageBox action, std::function<void(int)> callback);
+
 uint32_t GetTickCount();
 
 QWidget* getMainWidget();
@@ -50,6 +62,7 @@ QString removeMarkupTags(QString &text);
 bool ToggleChatBox();
 bool ToggleSendButton();
 bool TogglePlaybackButton();
+bool ToggleAudioButton();
 
 bool startsWith(const char *text, const char *prefix);
 

@@ -1,9 +1,9 @@
 #include "../include/xmlsets.h"
 
 struct stSettings settings;
-TiXmlDocument xmlSettings;
+tinyxml2::XMLDocument *xmlSettings = new tinyxml2::XMLDocument();
 
-int LoadSettings()
+void LoadSettings()
 {
 	// load
 	size_t filePathSize = strlen(ROOT_PATH) + strlen("/config.xml") + 1;
@@ -13,16 +13,23 @@ int LoadSettings()
 	if (filePath == nullptr)
 	{
 		fprintf(stderr, "Failed to allocate memory for filePath\n");
-		std::exit(0);
+		QApplication::exit(1);
 	}
-	if (!xmlSettings.LoadFile(filePath))
+	tinyxml2::XMLError xmlErr = xmlSettings->LoadFile(filePath);
+	if (xmlErr != tinyxml2::XML_SUCCESS)
 	{
 		WorkerClass worker(Globals::instance().getCentralWidget());
-		emit worker.MessageBox(QString::fromUtf8("Error"), QString::fromUtf8("Failed to load the config file"), QMessageBox::Ok, QMessageBox::Critical);
-		std::exit(0);
+		char *ErrMsg = (char *)malloc(70);
+		sprintf(ErrMsg, "Failed to load the config file : %s", xmlSettings->ErrorIDToName(xmlErr));
+		if (ErrMsg != nullptr)
+		{
+			emit worker.MessageBox(QString::fromUtf8("Error"), QString::fromUtf8(ErrMsg), QMessageBox::Ok, QMessageBox::Critical);
+			free(ErrMsg);
+		}
+		QApplication::exit(1);
 	}
 
-	TiXmlElement *rakSAMPElement = xmlSettings.FirstChildElement("LiteSAMP");
+	tinyxml2::XMLElement *rakSAMPElement = xmlSettings->FirstChildElement("LiteSAMP");
 	if (rakSAMPElement)
 	{
 		// get RespawnTick
@@ -51,7 +58,7 @@ int LoadSettings()
 		rakSAMPElement->QueryFloatAttribute("followZOffset", &settings.fFollowZOffset);*/
 
 		// get the first server
-		TiXmlElement *serverElement = rakSAMPElement->FirstChildElement("server");
+		tinyxml2::XMLElement *serverElement = rakSAMPElement->FirstChildElement("server");
 		if (serverElement)
 		{
 			char *pszAddr = (char *)serverElement->GetText();
@@ -79,30 +86,22 @@ int LoadSettings()
 		}
 	}
 
-	xmlSettings.Clear();
+	xmlSettings->Clear();
 	free(filePath);
-
-	return 1;
+	delete xmlSettings;
 }
 
-int UnLoadSettings()
+void UnLoadSettings()
 {
 	memset(&settings, 0, sizeof(settings));
-
-	return 1;
 }
 
-int ReloadSettings()
+void ReloadSettings()
 {
-	if (UnLoadSettings() && LoadSettings())
-	{
-		AppendLogF("Settings reloaded");
-		_logs->Log(LogLevel::DEBUG, "Settings reloaded");
-		return 1;
-	}
-
-	AppendLogF("Failed to reload settings");
-	_logs->Log(LogLevel::DEBUG, "Failed to reload settings");
-
-	return 0;
+	UnLoadSettings();
+	AppendLogF("Settings unloaded");
+	_logs->Log(LogLevel::DEBUG, "Settings unloaded");
+	LoadSettings();
+	AppendLogF("Settings reloaded");
+	_logs->Log(LogLevel::DEBUG, "Settings reloaded");
 }

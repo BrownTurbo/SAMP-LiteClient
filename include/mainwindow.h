@@ -30,6 +30,8 @@
 #include "settingswindow.h"
 #include "connectwindow.h"
 #include "playbackwindow.h"
+#include "serverswindow.h"
+#include "scorebwindow.h"
 
 #include "globals.h"
 #include "xmlsets.h"
@@ -55,6 +57,7 @@ private slots:
     void showConnectWindow();
     void showScoreBoardWindow();
     void showPlaybackWindow();
+    void showServerLWindow();
 
     void onAudioPauseClicked();
     void onAudioStopClicked();
@@ -81,11 +84,14 @@ private:
     QPushButton *audioCButton;
     QPushButton *actionsButton;
     QPushButton *playbackbtn;
+    QPushButton *serversList;
 
     LogsWindow *logsWindow = nullptr;
     SettingsWindow *settingsWindow = nullptr;
     ConnectWindow *connectWindow = nullptr;
     PlaybackWindow *playbackWindow = nullptr;
+    Scoreboard *scoreboardWindow = nullptr;
+    ServersList *serverlstWindow = nullptr;
 
     RakNetWorker *Nworker;
 

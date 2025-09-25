@@ -1,18 +1,16 @@
 #include "../include/scorebwindow.h"
 
-Scoreboard::Scoreboard(QWidget *parent = nullptr) : QDockWidget("Scoreboard", parent)
+Scoreboard::Scoreboard(QWidget *parent) : QWidget(parent)
 {
-    QWidget *dockContent = new QWidget(this);
-
-    dockContent->resize(1044, 707);
-    dockContent->setFixedSize(1044, 707);
+    this->resize(1044, 707);
+    this->setFixedSize(1044, 707);
     QSizePolicy sizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
     sizePolicy.setHorizontalStretch(0);
     sizePolicy.setVerticalStretch(0);
     sizePolicy.setHeightForWidth(this->sizePolicy().hasHeightForWidth());
-    dockContent->setSizePolicy(sizePolicy);
-    if (dockContent->objectName().isEmpty())
-        dockContent->setObjectName(QString::fromUtf8("ScoreBWidget"));
+    this->setSizePolicy(sizePolicy);
+    if (this->objectName().isEmpty())
+        this->setObjectName(QString::fromUtf8("ScoreBWidget"));
     tableWidget = new QTableWidget(this);
     if (tableWidget->objectName().isEmpty())
         tableWidget->setObjectName(QString::fromUtf8("scoreboard"));
@@ -25,49 +23,79 @@ Scoreboard::Scoreboard(QWidget *parent = nullptr) : QDockWidget("Scoreboard", pa
     tableWidget->setSelectionMode(QAbstractItemView::SingleSelection);
     tableWidget->verticalHeader()->setVisible(false);
 
-    QVBoxLayout *layout = new QVBoxLayout(dockContent);
+    QVBoxLayout *layout = new QVBoxLayout(this);
     layout->addWidget(tableWidget);
-    dockContent->setLayout(layout);
-    this->setWidget(dockContent);
+    this->setLayout(layout);
 
     QMetaObject::connectSlotsByName(this);
-
-    //QTimer *timer = new QTimer(this);
-    //connect(timer, &QTimer::timeout, this, &Scoreboard::updatePings);
-    //timer->start(2000);
-}
-
-void populatePlayers()
-{
-    players = {
-        {"Player1", 100, generateRandomPing()},
-        {"Player2", 150, generateRandomPing()},
-        {"Player3", 120, generateRandomPing()},
-        {"Player4", 80, generateRandomPing()},
-        {"Player5", 95, generateRandomPing()}};
-
-    tableWidget->setRowCount(players.size());
-    for (int i = 0; i < players.size(); ++i)
-    {
-        tableWidget->setItem(i, 0, new QTableWidgetItem(players[i].name));
-        tableWidget->setItem(i, 1, new QTableWidgetItem(QString::number(players[i].score)));
-        tableWidget->setItem(i, 2, new QTableWidgetItem(QString::number(players[i].ping)));
-    }
 }
 
 Scoreboard::~Scoreboard() {}
 
-void clearRow(QTableWidget *table, int row) {
-    for (int col = 0; col < table->columnCount(); ++col)
-        table->takeItem(row, col);
-}
+bool Scoreboard::isRowEmpty(int row) {
+    if(tableWidget == nullptr)
+        return false;
+    if (tableWidget->isHidden())
+        return false;
+    if (tableWidget->columnCount() == 0)
+        return true;
 
-// Function to check if a row is empty
-bool isRowEmpty(QTableWidget *table, int row) {
-    for (int col = 0; col < table->columnCount(); ++col) {
-        QTableWidgetItem *item = table->item(row, col);
+    for (int col = 0; col < tableWidget->columnCount(); ++col)
+    {
+        QTableWidgetItem *item = tableWidget->item(row, col);
         if (item != nullptr && !item->text().isEmpty())
             return false;
+    }
+    return true;
+}
+
+void Scoreboard::updateTableSize(int playersCount)
+{
+    if (tableWidget == nullptr)
+        return;
+    if (tableWidget->isHidden())
+        return;
+
+    tableWidget->setRowCount(playersCount);
+}
+
+void Scoreboard::handlePlayer(PlayerDTA player)
+{
+    if (tableWidget == nullptr)
+        return;
+    if (tableWidget->isHidden())
+        return;
+    if (player.id < 0 || player.id >= tableWidget->rowCount())
+        return;
+
+    if (!isRowEmpty(player.id))
+    {
+        for (int col = 0; col < tableWidget->columnCount(); ++col)
+            tableWidget->takeItem(player.id, col);
+    }
+
+    tableWidget->setItem(player.id, 0, new QTableWidgetItem(QString::number(player.id)));
+    tableWidget->setItem(player.id, 1, new QTableWidgetItem(player.name));
+    tableWidget->setItem(player.id, 2, new QTableWidgetItem(QString::number(player.score)));
+    tableWidget->setItem(player.id, 3, new QTableWidgetItem(QString::number(player.ping)));
+}
+
+bool Scoreboard::removePlayer(int playerid)
+{
+    if (tableWidget == nullptr)
+        return false;
+    if (tableWidget->isHidden())
+        return false;
+    if (playerid < 0 || playerid >= tableWidget->rowCount())
+        return false;
+
+    if (isRowEmpty(playerid))
+        return false;
+
+    if (tableWidget->item(playerid, 0)->text().toInt() == playerid)
+    {
+        for (int col = 0; col < tableWidget->columnCount(); ++col)
+            tableWidget->takeItem(playerid, col);
     }
     return true;
 }

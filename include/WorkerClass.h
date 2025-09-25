@@ -7,6 +7,10 @@
 #include <QtCore/QFlags>
 #include <QtWidgets/QMessageBox>
 
+#include <functional>
+
+#include "utils.h"
+
 class WorkerClass : public QObject
 {
     Q_OBJECT
@@ -18,7 +22,7 @@ public:
     }
 
 signals:
-    int MessageBox(const QString title, const QString message, QMessageBox::StandardButtons buttons, QMessageBox::Icon icon, QWidget* widget = nullptr);
+    int MessageBox(const QString title, const QString message, QMessageBox::StandardButtons buttons, QMessageBox::Icon icon, QWidget *widget = nullptr, ZMessageBox action = ZMessageBox::Nothing, std::function<void(int)> callback = nullptr);
     bool setStateMessage(const char *text);
 };
 

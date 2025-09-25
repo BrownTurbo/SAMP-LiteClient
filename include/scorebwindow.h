@@ -3,20 +3,19 @@
 #define SCOREBWINDOW_H
 
 #include <QtWidgets/QApplication>
-#include <QtWidgets/QDockWidget>
 #include <QtWidgets/QPushButton>
 #include <QtWidgets/QTableWidget>
 #include <QtWidgets/QVBoxLayout>
 #include <QtWidgets/QWizard>
 #include <QtWidgets/QWizardPage>
-#include <QtCore/QTimer>
+#include <QtWidgets/QHeaderView>
 #include <QtCore/QStringList>
+#include <QtWidgets/QHeaderView>
 #include <cstdlib>
-#include <ctime>
 
-#include "../globals.h"
+#include "./globals.h"
 
-class Scoreboard : public QDockWidget
+class Scoreboard : public QWidget
 {
     Q_OBJECT
 
@@ -24,26 +23,23 @@ public:
     Scoreboard(QWidget *parent = nullptr);
     ~Scoreboard();
 
-/*private slots:
-    void updatePings();
-*/
-
-public:
-    void clearRow(QTableWidget *table, int row);
-    bool isRowEmpty(QTableWidget *table, int row);
-
 private:
     QTableWidget *tableWidget;
-    QList<Player> players;
 
-    void populatePlayers();
+    bool isRowEmpty(int row);
 
-    struct Player
+public:
+    struct PlayerDTA
     {
         int id;
         QString name;
         int score;
         int ping;
     };
+
+public slots:
+    void updateTableSize(int playersCount);
+    void handlePlayer(PlayerDTA player);
+    bool removePlayer(int playerid);
 };
 #endif

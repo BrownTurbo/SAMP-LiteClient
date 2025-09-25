@@ -1,24 +1,49 @@
 #include "../include/utils.h"
 
-int __MessageBox(const QString title, const QString message, QFlags<QMessageBox::StandardButton> buttons, QMessageBox::Icon icon, QWidget* widget = nullptr) {
+int __MessageBox(const QString title, const QString message, QMessageBox::StandardButtons buttons, QMessageBox::Icon icon, QWidget *widget = nullptr, ZMessageBox action = ZMessageBox::Nothing, std::function<void(int)> callback = nullptr)
+{
     if (QApplication::instance()->thread() != QThread::currentThread())
         qDebug() << "> in MessageBox: Thread is not in main thread...";
     QWidget* mainW;
     mainW = (widget == nullptr ? QApplication::focusWidget() : widget);
     QApplication::alert(mainW, 0);
-    QMessageBox messageBox(mainW);
-    messageBox.setWindowTitle(title);
-    messageBox.setText(message);
-    messageBox.setStandardButtons(buttons);
-    messageBox.setIcon(icon);
+    QMessageBox* messageBox = new QMessageBox(mainW);
+    messageBox->setWindowTitle(title);
+    messageBox->setText(message);
+    messageBox->setStandardButtons(buttons);
+    messageBox->setIcon(icon);
 
-    return messageBox.exec();
+    if (action == ZMessageBox::Async)
+    {
+        messageBox->setAttribute(Qt::WA_DeleteOnClose);
+        QObject::connect(messageBox, &QMessageBox::finished, [callback, messageBox](int result)
+        {
+            if (callback)
+            {
+                callback(result);
+                messageBox->deleteLater();
+            }
+        });
+        messageBox->open();
+
+        delete messageBox;
+        return -1;
+    }
+    else
+    {
+        int response = messageBox->exec();
+
+        if (action == ZMessageBox::Exit && response == QMessageBox::Yes)
+            QApplication::quit();
+
+        delete messageBox;
+        return response;
+    }
 }
 
 uint32_t GetTickCount() {
     using namespace std::chrono;
-    return static_cast<uint32_t>(duration_cast<milliseconds>(
-        steady_clock::now().time_since_epoch()).count());
+    return static_cast<uint32_t>(duration_cast<milliseconds>(steady_clock::now().time_since_epoch()).count());
 }
 
 QWidget* getMainWidget() {
@@ -378,6 +403,58 @@ bool TogglePlaybackButton()
     }
     QMetaObject::invokeMethod(getMainWindow(), [playbackButton]() {
         playbackButton->setEnabled(!playbackButton->isEnabled());
+    }, Qt::QueuedConnection);
+    return true;
+}
+
+bool ToggleAudioButton()
+{
+    QSharedPointer<QPushButton> _muteAudioBtn = Globals::instance().getMuteAudioButton();
+    if (_muteAudioBtn.isNull())
+    {
+        qWarning() << "_muteAudioBtn is not a valid pointer";
+        return false;
+    }
+    QPushButton *muteButton = _muteAudioBtn.get();
+    if (muteButton == nullptr || muteButton->parent() == nullptr)
+    {
+        qWarning() << "QPushButton instance is not valid.";
+        return false;
+    }
+    QMetaObject::invokeMethod(getMainWindow(), [muteButton]() {
+        muteButton->setEnabled(!muteButton->isEnabled());
+    }, Qt::QueuedConnection);
+
+    QSharedPointer<QPushButton> _stopAudioBtn = Globals::instance().getStopAudioButton();
+    if (_stopAudioBtn.isNull())
+    {
+        qWarning() << "_stopAudioBtn is not a valid pointer";
+        return false;
+    }
+    QPushButton *stopButton = _stopAudioBtn.get();
+    if (stopButton == nullptr || stopButton->parent() == nullptr)
+    {
+        qWarning() << "QPushButton instance is not valid.";
+        return false;
+    }
+    QMetaObject::invokeMethod(getMainWindow(), [stopButton]() {
+        stopButton->setEnabled(!stopButton->isEnabled());
+    }, Qt::QueuedConnection);
+
+    QSharedPointer<QPushButton> _pauseAudioBtn = Globals::instance().getPauseAudioButton();
+    if (_pauseAudioBtn.isNull())
+    {
+        qWarning() << "_pauseAudioBtn is not a valid pointer";
+        return false;
+    }
+    QPushButton *pauseButton = _pauseAudioBtn.get();
+    if (pauseButton == nullptr || pauseButton->parent() == nullptr)
+    {
+        qWarning() << "QPushButton instance is not valid.";
+        return false;
+    }
+    QMetaObject::invokeMethod(getMainWindow(), [pauseButton]() {
+        pauseButton->setEnabled(!pauseButton->isEnabled());
     }, Qt::QueuedConnection);
     return true;
 }

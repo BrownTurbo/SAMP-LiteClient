@@ -3,8 +3,8 @@
 MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent) {
     if (this->objectName().isEmpty())
         this->setObjectName(QString::fromUtf8("MainWindow"));
-    this->resize(1189, 586);
-    this->setFixedSize(1189, 586);
+    this->resize(1189, 600);
+    this->setFixedSize(1189, 600);
     QWidget *centralwidget = new QWidget(this);
 
     if (centralwidget->objectName().isEmpty())
@@ -12,7 +12,7 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent) {
     chatDisplay = new QTextBrowser(centralwidget);
     if (chatDisplay->objectName().isEmpty())
         chatDisplay->setObjectName(QString::fromUtf8("chatDisplay"));
-    chatDisplay->setGeometry(QRect(9, 9, 861, 501));
+    chatDisplay->setGeometry(QRect(9, 9, 861, 513));
     chatDisplay->setReadOnly(true);
 #if QT_CONFIG(whatsthis)
     chatDisplay->setWhatsThis(QString::fromUtf8("Chat Box"));
@@ -21,13 +21,13 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent) {
     messageInput = new QLineEdit(centralwidget);
     if (messageInput->objectName().isEmpty())
         messageInput->setObjectName(QString::fromUtf8("messageInput"));
-    messageInput->setGeometry(QRect(10, 520, 591, 30));
+    messageInput->setGeometry(QRect(10, 533, 591, 30));
     messageInput->setPlaceholderText(QString::fromUtf8("Type your message here..."));
     messageInput->setEnabled(false);
     sendButton = new QPushButton(centralwidget);
     if (sendButton->objectName().isEmpty())
         sendButton->setObjectName(QString::fromUtf8("sendButton"));
-    sendButton->setGeometry(QRect(610, 520, 60, 30));
+    sendButton->setGeometry(QRect(610, 533, 60, 30));
     QSizePolicy sizePolicy(QSizePolicy::Minimum, QSizePolicy::Minimum);
     sizePolicy.setHorizontalStretch(0);
     sizePolicy.setVerticalStretch(0);
@@ -85,7 +85,7 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent) {
     if (stateMsg->objectName().isEmpty())
         stateMsg->setObjectName(QString::fromUtf8("stateMsg"));
     stateMsg->setEnabled(true);
-    stateMsg->setGeometry(QRect(10, 551, 861, 31));
+    stateMsg->setGeometry(QRect(10, 566, 861, 31));
     stateMsg->setText(QString::fromUtf8("<p><span style=\" font-size:11pt;\">State</span>:<span style=\" font-weight:600;\"> ........................................................................................................................................................................................</span></p>"));
     logsButton = new QPushButton(centralwidget);
     if (logsButton->objectName().isEmpty())
@@ -111,23 +111,26 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent) {
     scoreboardbtn->setEnabled(false);
     pauseButton = new QPushButton(centralwidget);
     pauseButton->setObjectName(QString::fromUtf8("pauseButton"));
-    pauseButton->setGeometry(QRect(1160, 560, 20, 20));
+    pauseButton->setGeometry(QRect(1160, 575, 20, 20));
     pauseButton->setIcon(QIcon(GetPath("resources/img/audio-pause.png")));
     pauseButton->setToolTip(QString::fromUtf8("Pause"));
     pauseButton->setCursor(Qt::PointingHandCursor);
+    pauseButton->setEnabled(false);
     stopButton = new QPushButton(centralwidget);
     stopButton->setObjectName(QString::fromUtf8("stopButton"));
-    stopButton->setGeometry(QRect(1130, 560, 20, 20));
+    stopButton->setGeometry(QRect(1130, 575, 20, 20));
     stopButton->setIcon(QIcon(GetPath("resources/img/audio-stop.png")));
     stopButton->setToolTip(QString::fromUtf8("Stop"));
     stopButton->setCursor(Qt::PointingHandCursor);
+    stopButton->setEnabled(false);
     audioCButton = new QPushButton(centralwidget);
     audioCButton->setObjectName(QString::fromUtf8("audioCButton"));
-    audioCButton->setGeometry(QRect(1100, 560, 20, 20));
+    audioCButton->setGeometry(QRect(1100, 575, 20, 20));
     audioCButton->setToolTip(QString::fromUtf8("Mute"));
     audioCButton->setIcon(QIcon(GetPath("resources/img/volume-mute.png")));
     //audioCButton->setIconSize(QSize(65, 65));
     audioCButton->setCursor(Qt::PointingHandCursor);
+    audioCButton->setEnabled(false);
     actionsButton = new QPushButton(centralwidget);
     actionsButton->setObjectName(QString::fromUtf8("actionsButton"));
     actionsButton->setGeometry(QRect(1090, 490, 80, 30));
@@ -144,11 +147,24 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent) {
     playbackbtn->setSizePolicy(sizePolicy);
     playbackbtn->setAutoDefault(false);
     playbackbtn->setFlat(false);
-    playbackbtn->setIcon(QIcon(GetPath("resources/img/scoreboard.png")));
+    playbackbtn->setIcon(QIcon(GetPath("resources/img/playback.png")));
     playbackbtn->setIconSize(QSize(22, 22));
     playbackbtn->setText(QString::fromUtf8("Playback"));
     playbackbtn->setCursor(Qt::PointingHandCursor);
     playbackbtn->setEnabled(false);
+    serversList = new QPushButton(centralwidget);
+    if (serversList->objectName().isEmpty())
+        serversList->setObjectName(QString::fromUtf8("serversList"));
+    serversList->setGeometry(QRect(1090, 530, 80, 30));
+    sizePolicy.setHeightForWidth(serversList->sizePolicy().hasHeightForWidth());
+    serversList->setSizePolicy(sizePolicy);
+    serversList->setAutoDefault(false);
+    serversList->setFlat(false);
+    serversList->setIcon(QIcon(GetPath("resources/img/playback.png")));
+    serversList->setIconSize(QSize(22, 22));
+    serversList->setText(QString::fromUtf8("Servers"));
+    serversList->setCursor(Qt::PointingHandCursor);
+    serversList->setObjectName(QString::fromUtf8("serversList"));
 
     this->setCentralWidget(centralwidget);
 
@@ -159,6 +175,7 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent) {
     this->connect(rootbtn, &QPushButton::clicked, this, &MainWindow::showConnectWindow);
     this->connect(scoreboardbtn, &QPushButton::clicked, this, &MainWindow::showScoreBoardWindow);
     this->connect(playbackbtn, &QPushButton::clicked, this, &MainWindow::showPlaybackWindow);
+    this->connect(serversList, &QPushButton::clicked, this, &MainWindow::showServerLWindow);
 
     // Threading shit!!
     threadManager = new ThreadManager(3);
@@ -214,6 +231,24 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent) {
             ptr->deleteLater();
     }));
 
+    Globals::instance().setStopAudioButton(QSharedPointer<QPushButton>(stopButton, [](QPushButton *ptr)
+    {
+        if (ptr && !ptr->parent())
+            ptr->deleteLater();
+    }));
+
+    Globals::instance().setPauseAudioButton(QSharedPointer<QPushButton>(pauseButton, [](QPushButton *ptr)
+    {
+        if (ptr && !ptr->parent())
+            ptr->deleteLater();
+    }));
+
+    Globals::instance().setMuteAudioButton(QSharedPointer<QPushButton>(audioCButton, [](QPushButton *ptr)
+    {
+        if (ptr && !ptr->parent())
+            ptr->deleteLater();
+    }));
+
     // Lazy weird fix
     if (!logsWindow)
         logsWindow = new LogsWindow(this);
@@ -238,6 +273,18 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent) {
     centerOverParent(playbackWindow, this);
     playbackWindow->show();
     playbackWindow->hide();
+
+    if (!scoreboardWindow)
+        scoreboardWindow = new Scoreboard(this);
+    centerOverParent(scoreboardWindow, this);
+    scoreboardWindow->show();
+    scoreboardWindow->hide();
+
+    if (!serverlstWindow)
+        serverlstWindow = new ServersList(this);
+    centerOverParent(serverlstWindow, this);
+    serverlstWindow->show();
+    serverlstWindow->hide();
 
     // SAMP...
     Nworker = new RakNetWorker();
@@ -335,15 +382,15 @@ void MainWindow::showConnectWindow()
 
 void MainWindow::showScoreBoardWindow()
 {
-    if (!settingsWindow)
-        settingsWindow = new SettingsWindow(this);
+    if (!scoreboardWindow)
+        scoreboardWindow = new Scoreboard(this);
 
-    QDockWidget *dock = new QDockWidget("Settings", this);
-    dock->setWidget(settingsWindow);
+    QDockWidget *dock = new QDockWidget("Scoreboard", this);
+    dock->setWidget(scoreboardWindow);
     dock->setFeatures(QDockWidget::DockWidgetClosable | QDockWidget::DockWidgetMovable | QDockWidget::DockWidgetFloatable);
     dock->setFloating(true);
     dock->setAllowedAreas(Qt::NoDockWidgetArea);
-    dock->resize(settingsWindow->sizeHint());
+    dock->resize(scoreboardWindow->sizeHint());
 
     centerOverParent(dock, this);
     dock->show();
@@ -360,6 +407,22 @@ void MainWindow::showPlaybackWindow()
     dock->setFloating(true);
     dock->setAllowedAreas(Qt::NoDockWidgetArea);
     dock->resize(playbackWindow->sizeHint());
+
+    centerOverParent(dock, this);
+    dock->show();
+}
+
+void MainWindow::showServerLWindow()
+{
+    if (!serverlstWindow)
+        serverlstWindow = new ServersList(this);
+
+    QDockWidget *dock = new QDockWidget("Servers List", this);
+    dock->setWidget(serverlstWindow);
+    dock->setFeatures(QDockWidget::DockWidgetClosable | QDockWidget::DockWidgetMovable | QDockWidget::DockWidgetFloatable);
+    dock->setFloating(true);
+    dock->setAllowedAreas(Qt::NoDockWidgetArea);
+    dock->resize(serverlstWindow->sizeHint());
 
     centerOverParent(dock, this);
     dock->show();

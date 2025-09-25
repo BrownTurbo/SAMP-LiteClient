@@ -50,7 +50,7 @@ void Packet_AUTH_KEY(Packet *p, RakClientInterface *pRakClient)
 		AppendChatBox("Unknown AUTH_IN! (%s)", ((char *)p->data + 2));
 		AppendLogF("Unknown AUTH_IN! (%s), Reconnecting in %d seconds...", ((char *)p->data + 2), iReconnectTime / 1000);
 		_logs->Log(LogLevel::FATAL, "Unknown AUTH_IN! (%s)", ((char *)p->data + 2));
-		std::exit(0);
+		//QApplication::quit();
 #endif
 		WorkerClass worker(Globals::instance().getCentralWidget());
 		worker.moveToThread(QApplication::instance()->thread());
@@ -129,6 +129,7 @@ void Packet_ConnectionSucceeded(Packet *p, RakClientInterface *pRakClient)
 	ToggleChatBox();
 	ToggleSendButton();
 	TogglePlaybackButton();
+	ToggleAudioButton();
 
 	QSharedPointer<QPushButton> _connectBtn = Globals::instance().getConnectButton();
 	if (_connectBtn.isNull())
@@ -713,6 +714,7 @@ void UpdateNetwork(RakClientInterface *pRakClient, Packet *pkt)
 				ToggleChatBox();
 				ToggleSendButton();
 				TogglePlaybackButton();
+				ToggleAudioButton();
 				emit worker.setStateMessage("Disconnected.");
 
 				QSharedPointer<QPushButton> _connectBtn = Globals::instance().getConnectButton();
@@ -728,6 +730,9 @@ void UpdateNetwork(RakClientInterface *pRakClient, Packet *pkt)
 					break;
 				}
 				connectBtn->setText("Connect");
+				QPointer<Scoreboard> scoreboard_ = new Scoreboard(getMainWidget());
+				QMetaObject::invokeMethod(getMainWindow(), [=]()
+										  { if (scoreboard_) scoreboard_->removePlayer(g_myPlayerID); }, Qt::QueuedConnection);
 			}
 			break;
 		case ID_DISCONNECTION_NOTIFICATION:
@@ -755,6 +760,7 @@ void UpdateNetwork(RakClientInterface *pRakClient, Packet *pkt)
 				ToggleChatBox();
 				ToggleSendButton();
 				TogglePlaybackButton();
+				ToggleAudioButton();
 				emit worker.setStateMessage("Disconnected.");
 
 				QSharedPointer<QPushButton> _connectBtn = Globals::instance().getConnectButton();
@@ -770,6 +776,9 @@ void UpdateNetwork(RakClientInterface *pRakClient, Packet *pkt)
 					break;
 				}
 				connectBtn->setText("Connect");
+				QPointer<Scoreboard> scoreboard_ = new Scoreboard(getMainWidget());
+				QMetaObject::invokeMethod(getMainWindow(), [=]()
+										  { if (scoreboard_) scoreboard_->removePlayer(g_myPlayerID); }, Qt::QueuedConnection);
 			}
 			break;
 		case ID_CONNECTION_BANNED:
@@ -796,6 +805,7 @@ void UpdateNetwork(RakClientInterface *pRakClient, Packet *pkt)
 				ToggleChatBox();
 				ToggleSendButton();
 				TogglePlaybackButton();
+				ToggleAudioButton();
 				emit worker.setStateMessage("Disconnected.");
 
 				QSharedPointer<QPushButton> _connectBtn = Globals::instance().getConnectButton();
@@ -811,11 +821,21 @@ void UpdateNetwork(RakClientInterface *pRakClient, Packet *pkt)
 					break;
 				}
 				connectBtn->setText("Connect");
+				QPointer<Scoreboard> scoreboard_ = new Scoreboard(getMainWidget());
+				QMetaObject::invokeMethod(getMainWindow(), [=]()
+										  { if (scoreboard_) scoreboard_->removePlayer(g_myPlayerID); }, Qt::QueuedConnection);
 			}
 			break;
 		case ID_CONNECTION_ATTEMPT_FAILED:
 			if (pRakClient == ::pRakClient)
 			{
+				if (GetGameState() != GAMESTATE_DISCONNECTION_REQUESTED)
+				{
+					ToggleChatBox();
+					ToggleSendButton();
+					TogglePlaybackButton();
+					ToggleAudioButton();
+				}
 #if RECONNECT_ON_ERROR == 1
 				AppendChatBox("[<b>%02d:%02d:%02d</b>] Connection attempt failed. Reconnecting in %d seconds.",
 							  localTime->tm_hour, localTime->tm_min, localTime->tm_sec, iReconnectTime / 1000);
@@ -834,9 +854,6 @@ void UpdateNetwork(RakClientInterface *pRakClient, Packet *pkt)
 				SetGameState(GAMESTATE_DISCONNECTED);
 #endif
 				emit worker.MessageBox(QString::fromUtf8("Error"), QString::fromUtf8("[SAMP] Connection attempt failed."), QMessageBox::Ok, QMessageBox::Critical);
-				ToggleChatBox();
-				ToggleSendButton();
-				TogglePlaybackButton();
 				emit worker.setStateMessage("Disconnected.");
 
 				QSharedPointer<QPushButton> _connectBtn = Globals::instance().getConnectButton();
@@ -852,6 +869,9 @@ void UpdateNetwork(RakClientInterface *pRakClient, Packet *pkt)
 					break;
 				}
 				connectBtn->setText("Connect");
+				QPointer<Scoreboard> scoreboard_ = new Scoreboard(getMainWidget());
+				QMetaObject::invokeMethod(getMainWindow(), [=]()
+										  { if (scoreboard_) scoreboard_->removePlayer(g_myPlayerID); }, Qt::QueuedConnection);
 			}
 			break;
 		case ID_NO_FREE_INCOMING_CONNECTIONS:
@@ -878,6 +898,7 @@ void UpdateNetwork(RakClientInterface *pRakClient, Packet *pkt)
 				ToggleChatBox();
 				ToggleSendButton();
 				TogglePlaybackButton();
+				ToggleAudioButton();
 				emit worker.setStateMessage("Disconnected.");
 
 				QSharedPointer<QPushButton> _connectBtn = Globals::instance().getConnectButton();
@@ -893,6 +914,9 @@ void UpdateNetwork(RakClientInterface *pRakClient, Packet *pkt)
 					break;
 				}
 				connectBtn->setText("Connect");
+				QPointer<Scoreboard> scoreboard_ = new Scoreboard(getMainWidget());
+				QMetaObject::invokeMethod(getMainWindow(), [=]()
+										  { if (scoreboard_) scoreboard_->removePlayer(g_myPlayerID); }, Qt::QueuedConnection);
 			}
 			break;
 		case ID_INVALID_PASSWORD:
@@ -920,6 +944,7 @@ void UpdateNetwork(RakClientInterface *pRakClient, Packet *pkt)
 				ToggleChatBox();
 				ToggleSendButton();
 				TogglePlaybackButton();
+				ToggleAudioButton();
 				emit worker.setStateMessage("Disconnected.");
 
 				QSharedPointer<QPushButton> _connectBtn = Globals::instance().getConnectButton();
@@ -935,6 +960,9 @@ void UpdateNetwork(RakClientInterface *pRakClient, Packet *pkt)
 					break;
 				}
 				connectBtn->setText("Connect");
+				QPointer<Scoreboard> scoreboard_ = new Scoreboard(getMainWidget());
+				QMetaObject::invokeMethod(getMainWindow(), [=]()
+										  { if (scoreboard_) scoreboard_->removePlayer(g_myPlayerID); }, Qt::QueuedConnection);
 			}
 			break;
 		case ID_CONNECTION_LOST:
@@ -961,6 +989,7 @@ void UpdateNetwork(RakClientInterface *pRakClient, Packet *pkt)
 				ToggleChatBox();
 				ToggleSendButton();
 				TogglePlaybackButton();
+				ToggleAudioButton();
 				emit worker.setStateMessage("Disconnected.");
 
 				QSharedPointer<QPushButton> _connectBtn = Globals::instance().getConnectButton();
@@ -976,6 +1005,9 @@ void UpdateNetwork(RakClientInterface *pRakClient, Packet *pkt)
 					break;
 				}
 				connectBtn->setText("Connect");
+				QPointer<Scoreboard> scoreboard_ = new Scoreboard(getMainWidget());
+				QMetaObject::invokeMethod(getMainWindow(), [=]()
+										  { if (scoreboard_) scoreboard_->removePlayer(g_myPlayerID); }, Qt::QueuedConnection);
 			}
 			break;
 		case ID_CONNECTION_REQUEST_ACCEPTED:

@@ -32,7 +32,7 @@ int RunCommand(char *szCMD)
 			SetGameState(GAMESTATE_DISCONNECTION_REQUESTED);
 			std::this_thread::sleep_for(std::chrono::milliseconds(1250));
 		}
-		std::exit(0);
+		QApplication::quit();
 
 		return 3;
 	}

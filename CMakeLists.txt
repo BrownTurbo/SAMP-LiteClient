@@ -41,6 +41,7 @@ set(SOURCES
     src/settingswindow.cpp
     src/connectwindow.cpp
     src/playbackwindow.cpp
+    src/serverswindow.cpp
     src/math_stuff.cpp
     src/Networking/netgame.cpp
     src/Networking/netrpc.cpp
@@ -50,7 +51,7 @@ set(SOURCES
     src/Game/misc_funcs.cpp
     src/Game/PlayerPos.cpp
     src/RakNetWorker.cpp
-    #src/scorebwindow.cpp
+    src/scorebwindow.cpp
     src/Game/CAnimationInfo.cpp
     src/Game/playback.cpp
     src/Game/recorder.cpp
@@ -70,6 +71,7 @@ set(HEADERS
     include/settingswindow.h
     include/connectwindow.h
     include/playbackwindow.h
+    include/serverswindow.h
     include/CVector.h
     include/math_stuff.h
     include/Networking/netgame.h
@@ -83,7 +85,7 @@ set(HEADERS
     include/RakNetWorker.h
     include/ThreadWorker.h
     include/WorkerClass.h
-    #include/scorebwindow.h
+    include/scorebwindow.h
     include/Game/CAnimationInfo.h
     include/Game/playback.h
     include/Game/recorder.h
