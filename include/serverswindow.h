@@ -17,6 +17,7 @@
 
 #include "./globals.h"
 
+#define MAX_SERVERS 100
 class ServersList : public QDialog
 {
     Q_OBJECT
@@ -35,5 +36,15 @@ private:
     QPushButton *CancelBtn;
     QLineEdit *lineEdit;
     QLabel *label;
+
+    struct srvData
+    {
+        char *srvAddr;
+        short srvPort;
+        char *SRVName;
+    };
+
+    int srvCount;
+    srvData srvList[MAX_SERVERS];
 };
 #endif

@@ -13,6 +13,9 @@ PlaybackWindow::PlaybackWindow(QWidget *parent) : QGroupBox(parent)
     this->setSizePolicy(sizePolicy);
     this->setMaximumSize(QSize(950, 600));
     this->setWindowTitle(QCoreApplication::translate("playbackWindow", "Playback", nullptr));
+    QFont font;
+    font.setBold(true);
+    font.setWeight(QFont::Weight::Bold);
     tableWidget = new QTableWidget(this);
     if (tableWidget->objectName().isEmpty())
         tableWidget->setObjectName(QString::fromUtf8("PlaybackWidget"));
@@ -22,7 +25,18 @@ PlaybackWindow::PlaybackWindow(QWidget *parent) : QGroupBox(parent)
     tableWidget->setSizeAdjustPolicy(QAbstractScrollArea::AdjustToContents);
     tableWidget->setAutoScroll(false);
     tableWidget->setColumnCount(2);
-    tableWidget->setHorizontalHeaderLabels({"Title", "Type"});
+    QTableWidgetItem *__widgetItem = new QTableWidgetItem();
+    __widgetItem->setTextAlignment(Qt::AlignCenter);
+    __widgetItem->setFont(font);
+    tableWidget->setHorizontalHeaderItem(0, __widgetItem);
+    QTableWidgetItem *___widgetItem = tableWidget->horizontalHeaderItem(0);
+    ___widgetItem->setText(QString::fromUtf8("Title"));
+    QTableWidgetItem *__widgetItem1 = new QTableWidgetItem();
+    __widgetItem1->setTextAlignment(Qt::AlignCenter);
+    __widgetItem1->setFont(font);
+    tableWidget->setHorizontalHeaderItem(1, __widgetItem1);
+    QTableWidgetItem *___widgetItem1 = tableWidget->horizontalHeaderItem(1);
+    ___widgetItem1->setText(QString::fromUtf8("Type"));
     tableWidget->horizontalHeader()->setSectionResizeMode(QHeaderView::Stretch);
     tableWidget->setEditTriggers(QAbstractItemView::NoEditTriggers);
     tableWidget->setSelectionBehavior(QAbstractItemView::SelectRows);

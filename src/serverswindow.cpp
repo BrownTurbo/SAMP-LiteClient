@@ -46,6 +46,7 @@ ServersList::ServersList(QWidget *parent) : QDialog(parent)
     serverL->setObjectName(QString::fromUtf8("serverL"));
     serverL->setGeometry(QRect(0, 4, 305, 347));
     serverL->setFixedWidth(305);
+    serverL->setFixedHeight(347);
     serverL->setFrameShape(QFrame::Box);
     serverL->setFrameShadow(QFrame::Raised);
     serverL->setLineWidth(1);
@@ -107,7 +108,7 @@ ServersList::~ServersList() {}
 
 void ServersList::onSavePressed()
 {
-    //
+    // serverL->setItem((srvCount - 1), 0, new QTableWidgetItem(srvList[(srvCount - 1)].srvName));
 }
 
 void ServersList::onCancelPressed()
