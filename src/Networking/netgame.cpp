@@ -730,9 +730,6 @@ void UpdateNetwork(RakClientInterface *pRakClient, Packet *pkt)
 					break;
 				}
 				connectBtn->setText("Connect");
-				QPointer<Scoreboard> scoreboard_ = new Scoreboard(getMainWidget());
-				QMetaObject::invokeMethod(getMainWindow(), [=]()
-										  { if (scoreboard_) scoreboard_->removePlayer(g_myPlayerID); }, Qt::QueuedConnection);
 			}
 			break;
 		case ID_DISCONNECTION_NOTIFICATION:
@@ -776,7 +773,7 @@ void UpdateNetwork(RakClientInterface *pRakClient, Packet *pkt)
 					break;
 				}
 				connectBtn->setText("Connect");
-				QPointer<Scoreboard> scoreboard_ = new Scoreboard(getMainWidget());
+				Scoreboard* scoreboard_ = new Scoreboard(getMainWidget());
 				QMetaObject::invokeMethod(getMainWindow(), [=]()
 										  { if (scoreboard_) scoreboard_->removePlayer(g_myPlayerID); }, Qt::QueuedConnection);
 			}
@@ -821,7 +818,7 @@ void UpdateNetwork(RakClientInterface *pRakClient, Packet *pkt)
 					break;
 				}
 				connectBtn->setText("Connect");
-				QPointer<Scoreboard> scoreboard_ = new Scoreboard(getMainWidget());
+				Scoreboard* scoreboard_ = new Scoreboard(getMainWidget());
 				QMetaObject::invokeMethod(getMainWindow(), [=]()
 										  { if (scoreboard_) scoreboard_->removePlayer(g_myPlayerID); }, Qt::QueuedConnection);
 			}
@@ -869,9 +866,7 @@ void UpdateNetwork(RakClientInterface *pRakClient, Packet *pkt)
 					break;
 				}
 				connectBtn->setText("Connect");
-				QPointer<Scoreboard> scoreboard_ = new Scoreboard(getMainWidget());
-				QMetaObject::invokeMethod(getMainWindow(), [=]()
-										  { if (scoreboard_) scoreboard_->removePlayer(g_myPlayerID); }, Qt::QueuedConnection);
+				Scoreboard* scoreboard_ = new Scoreboard(getMainWidget());
 			}
 			break;
 		case ID_NO_FREE_INCOMING_CONNECTIONS:
@@ -914,9 +909,6 @@ void UpdateNetwork(RakClientInterface *pRakClient, Packet *pkt)
 					break;
 				}
 				connectBtn->setText("Connect");
-				QPointer<Scoreboard> scoreboard_ = new Scoreboard(getMainWidget());
-				QMetaObject::invokeMethod(getMainWindow(), [=]()
-										  { if (scoreboard_) scoreboard_->removePlayer(g_myPlayerID); }, Qt::QueuedConnection);
 			}
 			break;
 		case ID_INVALID_PASSWORD:
@@ -960,9 +952,6 @@ void UpdateNetwork(RakClientInterface *pRakClient, Packet *pkt)
 					break;
 				}
 				connectBtn->setText("Connect");
-				QPointer<Scoreboard> scoreboard_ = new Scoreboard(getMainWidget());
-				QMetaObject::invokeMethod(getMainWindow(), [=]()
-										  { if (scoreboard_) scoreboard_->removePlayer(g_myPlayerID); }, Qt::QueuedConnection);
 			}
 			break;
 		case ID_CONNECTION_LOST:
@@ -1005,7 +994,7 @@ void UpdateNetwork(RakClientInterface *pRakClient, Packet *pkt)
 					break;
 				}
 				connectBtn->setText("Connect");
-				QPointer<Scoreboard> scoreboard_ = new Scoreboard(getMainWidget());
+				Scoreboard* scoreboard_ = new Scoreboard(getMainWidget());
 				QMetaObject::invokeMethod(getMainWindow(), [=]()
 										  { if (scoreboard_) scoreboard_->removePlayer(g_myPlayerID); }, Qt::QueuedConnection);
 			}
