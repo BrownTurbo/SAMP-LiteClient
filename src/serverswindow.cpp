@@ -2,8 +2,8 @@
 
 ServersList::ServersList(QWidget *parent) : QDialog(parent)
 {
-    this->resize(683, 352);
-    this->setFixedSize(683, 352);
+    this->resize(800, 450);
+    this->setFixedSize(800, 450);
     QSizePolicy sizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
     sizePolicy.setHorizontalStretch(0);
     sizePolicy.setVerticalStretch(0);
@@ -14,39 +14,38 @@ ServersList::ServersList(QWidget *parent) : QDialog(parent)
 
     QVBoxLayout *VLayout = new QVBoxLayout(this);
     VLayout->setGeometry(QRect(0, 0, 683, 352));
+    VLayout->setContentsMargins(10, 10, 10, 10);
+    VLayout->setSpacing(10);
     QHBoxLayout *HLayout_ = new QHBoxLayout(this);
     HLayout_->setGeometry(QRect(0, 1, 351, 348));
     QHBoxLayout *HLayout = new QHBoxLayout(this);
     HLayout_->setGeometry(QRect(0, 320, 300, 60));
     HLayout->addStretch();
     serverL = new QTableWidget(this);
-    if (serverL->columnCount() < 3)
-        serverL->setColumnCount(3);
     QFont font;
     font.setBold(true);
     font.setWeight(QFont::Weight::Bold);
-    QTableWidgetItem *__widgetItem = new QTableWidgetItem();
-    __widgetItem->setTextAlignment(Qt::AlignCenter);
-    __widgetItem->setFont(font);
-    serverL->setHorizontalHeaderItem(0, __widgetItem);
-    QTableWidgetItem *___widgetItem = serverL->horizontalHeaderItem(0);
-    ___widgetItem->setText(QString::fromUtf8("Number"));
-    QTableWidgetItem *__widgetItem1 = new QTableWidgetItem();
-    __widgetItem1->setTextAlignment(Qt::AlignCenter);
-    __widgetItem1->setFont(font);
-    serverL->setHorizontalHeaderItem(1, __widgetItem1);
-    QTableWidgetItem *___widgetItem1 = serverL->horizontalHeaderItem(1);
-    ___widgetItem1->setText(QString::fromUtf8("IP"));
-    QTableWidgetItem *__widgetItem2 = new QTableWidgetItem();
-    __widgetItem2->setTextAlignment(Qt::AlignCenter);
-    __widgetItem2->setFont(font);
-    serverL->setHorizontalHeaderItem(2, __widgetItem2);
-    QTableWidgetItem *___widgetItem2 = serverL->horizontalHeaderItem(2);
-    ___widgetItem2->setText(QString::fromUtf8("Name"));
+
+    // Cols...
+    const std::vector<QString> headers = {"ID", "Name", "Address", "Port", "Ping"};
+    int colsCount = static_cast<int>(headers.size());
+    if (serverL->columnCount() < colsCount)
+    serverL->setColumnCount(colsCount);
+
+    for (int i = 0; i < headers.size(); ++i) {
+        // Create the item
+        auto* headerItem = new QTableWidgetItem(headers[i]);
+        headerItem->setTextAlignment(Qt::AlignCenter);
+        headerItem->setFont(font);
+
+        // Set it to the table - this is now safe because ColumnCount is 5
+        serverL->setHorizontalHeaderItem(i, headerItem);
+    }
+
     serverL->setObjectName(QString::fromUtf8("serverL"));
-    serverL->setGeometry(QRect(0, 4, 305, 347));
-    serverL->setFixedWidth(305);
-    serverL->setFixedHeight(347);
+    serverL->setGeometry(QRect(0, 4, 450, 400));
+    serverL->setFixedWidth(450);
+    serverL->setFixedHeight(400);
     serverL->setFrameShape(QFrame::Box);
     serverL->setFrameShadow(QFrame::Raised);
     serverL->setLineWidth(1);
@@ -59,6 +58,7 @@ ServersList::ServersList(QWidget *parent) : QDialog(parent)
     serverL->setSelectionBehavior(QAbstractItemView::SelectRows);
     serverL->setSelectionMode(QAbstractItemView::SingleSelection);
     serverL->verticalHeader()->setVisible(false);
+    serverL->setRowCount(MAX_SERVERS);
     serverLine = new QFrame(this);
     serverLine->setObjectName(QString::fromUtf8("serverLine"));
     serverLine->setGeometry(QRect(302, 280, 371, 71));
@@ -78,19 +78,20 @@ ServersList::ServersList(QWidget *parent) : QDialog(parent)
     CancelBtn->setCursor(QCursor(Qt::PointingHandCursor));
     lineEdit = new QLineEdit(this);
     lineEdit->setObjectName(QString::fromUtf8("lineEdit"));
-    lineEdit->setGeometry(QRect(150, 10, 271, 30));
-    lineEdit->setFixedWidth(250);
+    lineEdit->setGeometry(QRect(50, 10, 200, 30));
+    lineEdit->setFixedWidth(200);
     lineEdit->setFixedHeight(30);
     lineEdit->setText(QString::fromUtf8("127.0.0.1:7777"));
     label = new QLabel(this);
     label->setObjectName(QString::fromUtf8("label"));
-    label->setGeometry(QRect(25, 10, 91, 22));
+    label->setGeometry(QRect(35, 10, 91, 22));
     label->setFixedWidth(91);
     label->setFixedHeight(22);
     label->setText(QString::fromUtf8("IP Address:"));
-    HLayout_->addWidget(serverL, 1, Qt::AlignmentFlag::AlignTop);
-    HLayout_->addWidget(label, 0, Qt::AlignmentFlag::AlignTop);
-    HLayout_->addWidget(lineEdit, 0, Qt::AlignmentFlag::AlignTop);
+    HLayout_->addWidget(serverL, 3, Qt::AlignmentFlag::AlignTop);
+    HLayout_->addWidget(label, 1, Qt::AlignmentFlag::AlignTop);
+    HLayout_->addWidget(lineEdit, 1, Qt::AlignmentFlag::AlignTop);
+    HLayout_->addStretch();
     VLayout->addLayout(HLayout_);
     HLayout->addWidget(serverLine);
     HLayout->addWidget(SaveBtn);
@@ -108,10 +109,98 @@ ServersList::~ServersList() {}
 
 void ServersList::onSavePressed()
 {
-    // serverL->setItem((srvCount - 1), 0, new QTableWidgetItem(srvList[(srvCount - 1)].srvName));
+    //
 }
 
 void ServersList::onCancelPressed()
 {
     this->close();
+}
+
+bool ServersList::addServer(const srvDTA& server)
+{
+    if (serverL == nullptr)
+        return false;
+    if (serverL->isHidden())
+        return false;
+
+    int serverID = -1;
+    serverID = ++srvsCount;
+    if (serverID >= MAX_SERVERS)
+        return false;
+
+    if (serverID < 0 || serverID >= serverL->rowCount())
+        return false;
+
+    if (!isTableWidgetRowEmpty(serverL, serverID))
+    {
+        for (int col = 0; col < serverL->columnCount(); ++col)
+            serverL->takeItem(serverID, col);
+    }
+
+    QueryAPI::SAMPServerInfo serverInfo;
+    bool success = false;
+
+    QueryAPI::GetSAMPServerInfo(server.address.c_str(), server.port, serverInfo, success);
+    if (success) {
+        serverL->setItem(serverID, 0, new QTableWidgetItem(QString::number(serverID)));
+        serverL->setItem(serverID, 1, new QTableWidgetItem(QString::fromUtf8(serverInfo.serverName)));
+        serverL->setItem(serverID, 2, new QTableWidgetItem(QString::fromUtf8(server.address.c_str())));
+        serverL->setItem(serverID, 3, new QTableWidgetItem(QString::number(server.port)));
+        serverL->setItem(serverID, 4, new QTableWidgetItem(QString::number(serverInfo.ping)));
+
+        srvData[serverID] = std::vector<ListValue>{
+            server.address,
+            server.port
+        };
+        return true;
+    }
+    else
+        return false;
+}
+
+bool ServersList::removeServer(int serverid)
+{
+    if (serverL == nullptr)
+        return false;
+    if (serverL->isHidden())
+        return false;
+    if (serverid < 0 || serverid >= serverL->rowCount())
+        return false;
+
+    if (isTableWidgetRowEmpty(serverL, serverid))
+        return false;
+
+    if (serverL->item(serverid, 0)->text().toInt() == serverid)
+    {
+        for (int col = 0; col < serverL->columnCount(); ++col)
+            serverL->takeItem(serverid, col);
+    }
+
+    srvData.erase(serverid);
+    return true;
+}
+
+void ServersList::onTick()
+{
+    QueryAPI::SAMPServerInfo serverInfo;
+    bool success = false;
+    for (auto& [serverID, serverDTA] : srvData)
+    {
+        std::string addr = std::get<std::string>(serverDTA[0]);
+        int port = std::get<int>(serverDTA[1]);
+        QueryAPI::GetSAMPServerInfo(addr.c_str(), port, serverInfo, success);
+        if (success)
+        {
+            serverL->setItem(serverID, 0, new QTableWidgetItem(QString::number(serverID)));
+            serverL->setItem(serverID, 1, new QTableWidgetItem(QString::fromUtf8(serverInfo.serverName)));
+            serverL->setItem(serverID, 2, new QTableWidgetItem(QString::fromUtf8(addr)));
+            serverL->setItem(serverID, 3, new QTableWidgetItem(QString::number(port)));
+            serverL->setItem(serverID, 4, new QTableWidgetItem(QString::number(serverInfo.ping)));
+        }
+        else
+        {
+            serverL->setItem(serverID, 4, new QTableWidgetItem("<OFFLINE>"));
+        }
+    }
 }

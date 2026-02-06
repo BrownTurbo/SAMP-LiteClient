@@ -32,23 +32,6 @@ Scoreboard::Scoreboard(QWidget *parent) : QWidget(parent)
 
 Scoreboard::~Scoreboard() {}
 
-bool Scoreboard::isRowEmpty(int row) {
-    if(tableWidget == nullptr)
-        return false;
-    if (tableWidget->isHidden())
-        return false;
-    if (tableWidget->columnCount() == 0)
-        return true;
-
-    for (int col = 0; col < tableWidget->columnCount(); ++col)
-    {
-        QTableWidgetItem *item = tableWidget->item(row, col);
-        if (item != nullptr && !item->text().isEmpty())
-            return false;
-    }
-    return true;
-}
-
 void Scoreboard::updateTableSize(int playersCount)
 {
     if (tableWidget == nullptr)
@@ -68,7 +51,7 @@ void Scoreboard::handlePlayer(PlayerDTA player)
     if (player.id < 0 || player.id >= tableWidget->rowCount())
         return;
 
-    if (!isRowEmpty(player.id))
+    if (!isTableWidgetRowEmpty(tableWidget, player.id))
     {
         for (int col = 0; col < tableWidget->columnCount(); ++col)
             tableWidget->takeItem(player.id, col);
@@ -89,7 +72,7 @@ bool Scoreboard::removePlayer(int playerid)
     if (playerid < 0 || playerid >= tableWidget->rowCount())
         return false;
 
-    if (isRowEmpty(playerid))
+    if (isTableWidgetRowEmpty(tableWidget, playerid))
         return false;
 
     if (tableWidget->item(playerid, 0)->text().toInt() == playerid)

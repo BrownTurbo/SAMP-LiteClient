@@ -17,6 +17,7 @@
 #include <QtMultimedia/QMediaPlayer>
 #include <QtCore/QSharedPointer>
 #include <QtCore/QRegularExpression>
+#include <QtWidgets/QTableWidget>
 
 #include "common.h"
 #include "globals.h"
@@ -71,3 +72,7 @@ const char *getWeaponName(int weaponid);
 bool IsVehicleIndexValid(int vehicleid);
 
 void centerOverParent(QWidget* child, QWidget* parent);
+
+// QTableWidget...
+bool isTableWidgetRowEmpty(QTableWidget *tabelWidget, int row);
+void updateTableWidgetSize(QTableWidget *tabelWidget, int playersCount);

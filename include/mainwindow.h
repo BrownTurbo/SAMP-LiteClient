@@ -44,6 +44,8 @@
 #include "RakNetWorker.h"
 #include "WorkerClass.h"
 
+#include "IntervalWorker.h"
+
 class MainWindow : public QMainWindow {
     Q_OBJECT
 

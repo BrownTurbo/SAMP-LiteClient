@@ -16,8 +16,16 @@
 #include <QtWidgets/QHBoxLayout>
 
 #include "./globals.h"
+#include "./utils.h"
 
-#define MAX_SERVERS 100
+#include "../lib/query/QueryAPI.h"
+
+#include <map>
+#include <variant>
+#include <vector>
+
+#define MAX_SERVERS (150)
+
 class ServersList : public QDialog
 {
     Q_OBJECT
@@ -37,14 +45,21 @@ private:
     QLineEdit *lineEdit;
     QLabel *label;
 
-    struct srvData
+    struct srvDTA
     {
-        char *srvAddr;
-        short srvPort;
-        char *SRVName;
+        std::string address;
+        int port;
     };
 
-    int srvCount;
-    srvData srvList[MAX_SERVERS];
+    using ListValue = std::variant<std::string, int>;
+    std::map<int, std::vector<ListValue>> srvData;
+
+    int srvsCount = -1;
+
+public:
+    bool addServer(const srvDTA& server);
+    bool removeServer(int serverid);
+
+    void onTick();
 };
 #endif

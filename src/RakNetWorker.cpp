@@ -41,20 +41,14 @@ void RakNetWorker::run()
 			if ((GetTickCount() - dwLastConnectAttempt) > iReconnectTime)
 			{
 				receivedResponse = false;
-				if (GetGameState() == GAMESTATE_CONNECTION_REQUESTED || GetGameState() == GAMESTATE_WAIT_CONNECT)
+				if (GetGameState() == GAMESTATE_CONNECTION_REQUESTED || GetGameState() == GAMESTATE_WAIT_CONNECT || GetGameState() == GAMESTATE_CONNECTING)
 				{
 					if (!iGettingNewName)
 						sampConnect(settings.server.szAddr, settings.server.iPort, settings.server.szNickname, settings.server.szPassword, pRakClient);
 					else
 						sampConnect(settings.server.szAddr, settings.server.iPort, playerPool[g_myPlayerID].szPlayerName, settings.server.szPassword, pRakClient);
-				}
-				else if (GetGameState() == GAMESTATE_CONNECTING)
-				{
-					if (!iGettingNewName)
-						sampConnect(settings.server.szAddr, settings.server.iPort, settings.server.szNickname, settings.server.szPassword, pRakClient);
-					else
-						sampConnect(settings.server.szAddr, settings.server.iPort, playerPool[g_myPlayerID].szPlayerName, settings.server.szPassword, pRakClient);
-					dwLastConnectAttempt = GetTickCount();
+					if (GetGameState() == GAMESTATE_CONNECTING)
+						dwLastConnectAttempt = GetTickCount();
 				}
 			}
 

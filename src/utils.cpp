@@ -497,3 +497,32 @@ void centerOverParent(QWidget* child, QWidget* parent) {
 
     child->move(childPos);
 }
+
+// QTableWidget...
+bool isTableWidgetRowEmpty(QTableWidget *tabelWidget, int row)
+{
+    if (tabelWidget == nullptr)
+        return false;
+    if (tabelWidget->isHidden())
+        return false;
+    if (tabelWidget->columnCount() == 0)
+        return true;
+
+    for (int col = 0; col < tabelWidget->columnCount(); ++col)
+    {
+        QTableWidgetItem *item = tabelWidget->item(row, col);
+        if (item != nullptr && !item->text().isEmpty())
+            return false;
+    }
+    return true;
+}
+
+void updateTableWidgetSize(QTableWidget *tabelWidget, int playersCount)
+{
+    if (tabelWidget == nullptr)
+        return;
+    if (tabelWidget->isHidden())
+        return;
+
+    tabelWidget->setRowCount(playersCount);
+}

@@ -14,6 +14,7 @@
 #include <cstdlib>
 
 #include "./globals.h"
+#include "./utils.h"
 
 class Scoreboard : public QWidget
 {
@@ -25,8 +26,6 @@ public:
 
 private:
     QTableWidget *tableWidget;
-
-    bool isRowEmpty(int row);
 
 public:
     struct PlayerDTA

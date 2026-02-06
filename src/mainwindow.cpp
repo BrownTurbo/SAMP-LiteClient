@@ -184,8 +184,15 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent) {
     worker = new WorkerClass(this->centralWidget());
 
     workerThread = new QThread(this);
-    connect(workerThread, &QThread::finished, worker, &QObject::deleteLater);
+    this->connect(workerThread, &QThread::finished, worker, &QObject::deleteLater);
     threadManager->queueWorker(workerThread);
+    threadManager->processNextWorker();
+
+    // ...
+    auto* intervalWorker = new IntervalWorker(750, [](){});
+
+    this->connect(intervalWorker, &IntervalWorker::tick, serverlstWindow, &ServersList::onTick, Qt::QueuedConnection);
+    threadManager->queueWorker(intervalWorker);
     threadManager->processNextWorker();
 
     this->connect(pauseButton, &QPushButton::clicked, this, &MainWindow::onAudioPauseClicked);

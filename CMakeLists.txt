@@ -85,6 +85,7 @@ set(HEADERS
     include/RakNetWorker.h
     include/ThreadWorker.h
     include/WorkerClass.h
+    include/IntervalWorker.h
     include/scorebwindow.h
     include/Game/CAnimationInfo.h
     include/Game/playback.h
@@ -131,7 +132,11 @@ file(GLOB XML_SRC "lib/tinyxml/*.cpp")
 file(GLOB XML_HDR "lib/tinyxml/*.h")
 add_library(TinyXML ${XML_SRC} ${XML_HDR})
 
-target_link_libraries(${PROJECT_NAME} PRIVATE RakNet TinyXML)
+file(GLOB QUERY_SRC "lib/query/*.cpp")
+file(GLOB QUERY_HDR "lib/query/*.h")
+add_library(QueryAPI ${QUERY_SRC} ${QUERY_HDR})
+
+target_link_libraries(${PROJECT_NAME} PRIVATE RakNet TinyXML QueryAPI)
 
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -O0 -g -lstdc++ -fsanitize=address") ## -fsanitize=thread
 

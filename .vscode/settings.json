@@ -68,5 +68,14 @@
     "qsharedpointer": "cpp",
     "fstream": "cpp"
   },
-  "C_Cpp.default.compilerPath": "/usr/bin/gcc-13"
+  "C_Cpp.default.compilerPath": "/usr/bin/gcc-13",
+  "C_Cpp.default.intelliSenseMode": "linux-gcc-x64",
+  "C_Cpp.default.cppStandard": "c++23",
+  "C_Cpp.default.cStandard": "c23",
+  "C_Cpp.inlayHints.autoDeclarationTypes.showOnLeft": true,
+  "C_Cpp.inlayHints.autoDeclarationTypes.enabled": true,
+  "C_Cpp.inlayHints.parameterNames.enabled": true,
+  "C_Cpp.inlayHints.referenceOperator.enabled": true,
+  "C_Cpp.inlayHints.referenceOperator.showSpace": true,
+  "C_Cpp.formatting": "clangFormat"
 }
