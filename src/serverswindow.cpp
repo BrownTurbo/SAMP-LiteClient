@@ -30,15 +30,13 @@ ServersList::ServersList(QWidget *parent) : QDialog(parent)
     const std::vector<QString> headers = {"ID", "Name", "Address", "Port", "Ping"};
     int colsCount = static_cast<int>(headers.size());
     if (serverL->columnCount() < colsCount)
-    serverL->setColumnCount(colsCount);
+        serverL->setColumnCount(colsCount);
 
     for (int i = 0; i < headers.size(); ++i) {
-        // Create the item
         auto* headerItem = new QTableWidgetItem(headers[i]);
         headerItem->setTextAlignment(Qt::AlignCenter);
         headerItem->setFont(font);
 
-        // Set it to the table - this is now safe because ColumnCount is 5
         serverL->setHorizontalHeaderItem(i, headerItem);
     }
 
