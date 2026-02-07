@@ -54,8 +54,11 @@ void ServerJoin(RPCParameters *rpcParams)
 	playerPool[playerId].BYTEIsNPC = bIsNPC;
 	strcpy((char *)playerPool[playerId].szPlayerName, szPlayerName);
 
-	AppendLogF("***[JOIN] (%d) %s", playerId, szPlayerName);
-	_logs->Log(LogLevel::DEBUG, "***[JOIN] (%d) %s", playerId, szPlayerName);
+	if (LogSettings.RPC)
+	{
+		AppendLogF("***[JOIN] (%d) %s", playerId, szPlayerName);
+		_logs->Log(LogLevel::DEBUG, "***[JOIN] (%d) %s", playerId, szPlayerName);
+	}
 }
 
 void ServerQuit(RPCParameters *rpcParams)
@@ -78,8 +81,11 @@ void ServerQuit(RPCParameters *rpcParams)
 
 	playerPool[playerId].bIsConnected = false;
 	playerPool[playerId].BYTEIsNPC = 0;
-	AppendLogF("***[QUIT:%d] (%d) %s", uint8_tReason, playerId, playerPool[playerId].szPlayerName);
-	_logs->Log(LogLevel::DEBUG, "***[QUIT:%d] (%d) %s", uint8_tReason, playerId, playerPool[playerId].szPlayerName);
+	if (LogSettings.RPC)
+	{
+		AppendLogF("***[QUIT:%d] (%d) %s", uint8_tReason, playerId, playerPool[playerId].szPlayerName);
+		_logs->Log(LogLevel::DEBUG, "***[QUIT:%d] (%d) %s", uint8_tReason, playerId, playerPool[playerId].szPlayerName);
+	}
 	memset(playerPool[playerId].szPlayerName, 0, 20);
 }
 
@@ -155,8 +161,11 @@ void InitGame(RPCParameters *rpcParams)
 	g_myPlayerID = MyPlayerID;
 
 	AppendChatBox("Connected to %.64s | %s(ID:%d)", g_szHostName, playerPool[g_myPlayerID].szPlayerName, g_myPlayerID);
-	AppendLogF("Connected to %.64s | %s(ID:%d)", g_szHostName, playerPool[g_myPlayerID].szPlayerName, g_myPlayerID);
-	_logs->Log(LogLevel::INFO, "Connected to %.64s | %s(ID:%d)", g_szHostName, playerPool[g_myPlayerID].szPlayerName, g_myPlayerID);
+	if (LogSettings.RPC)
+	{
+		AppendLogF("Connected to %.64s | %s(ID:%d)", g_szHostName, playerPool[g_myPlayerID].szPlayerName, g_myPlayerID);
+		_logs->Log(LogLevel::INFO, "Connected to %.64s | %s(ID:%d)", g_szHostName, playerPool[g_myPlayerID].szPlayerName, g_myPlayerID);
+	}
 
 	iGameInited = true;
 }
@@ -215,9 +224,11 @@ void WorldPlayerAdd(RPCParameters *rpcParams)
 	playerPool[playerId].onfootData.fCurrentPosition[2] =
 		playerPool[playerId].incarData.vecPos[2] = vecPos[2];
 	memcpy(playerPool[playerId].onfootData.SkillLevel, wSkillLevel, sizeof(uint16_t) * 11);
-
-	AppendLogF("[WORLD ADD] Player [%d]", playerId);
-	_logs->Log(LogLevel::DEBUG, "[WORLD ADD] Player [%d]", playerId);
+	if (LogSettings.RPC)
+	{
+		AppendLogF("[WORLD ADD] Player [%d]", playerId);
+		_logs->Log(LogLevel::DEBUG, "[WORLD ADD] Player [%d]", playerId);
+	}
 }
 
 void WorldPlayerDeath(RPCParameters *rpcParams)
@@ -236,11 +247,14 @@ void WorldPlayerDeath(RPCParameters *rpcParams)
 	if (playerId < 0 || playerId >= MAX_PLAYERS)
 		return;
 
-	if(playerId == g_myPlayerID)
+	if (playerId == g_myPlayerID)
 		SetState(STATE_DEAD);
 
-	AppendLogF("[PLAYER_DEATH] %d", playerId);
-	_logs->Log(LogLevel::DEBUG, "[PLAYER_DEATH] %d", playerId);
+	if (LogSettings.RPC)
+	{
+		AppendLogF("[PLAYER_DEATH] %d", playerId);
+		_logs->Log(LogLevel::DEBUG, "[PLAYER_DEATH] %d", playerId);
+	}
 }
 
 void WorldPlayerRemove(RPCParameters *rpcParams)
@@ -262,8 +276,11 @@ void WorldPlayerRemove(RPCParameters *rpcParams)
 	playerPool[playerId].bIsStreamedIn = false;
 	vect3_zero(playerPool[playerId].incarData.vecPos);
 
-	AppendLogF("[PLAYER_REMOVE] %d", playerId);
-	_logs->Log(LogLevel::DEBUG, "[PLAYER_REMOVE] %d", playerId);
+	if (LogSettings.RPC)
+	{
+		AppendLogF("[PLAYER_REMOVE] %d", playerId);
+		_logs->Log(LogLevel::DEBUG, "[PLAYER_REMOVE] %d", playerId);
+	}
 }
 
 void WorldVehicleAdd(RPCParameters *rpcParams)
@@ -290,10 +307,13 @@ void WorldVehicleAdd(RPCParameters *rpcParams)
 	vehiclePool[NewVehicle.VehicleId].BYTEInterior = NewVehicle.BYTEInterior;
 	vehiclePool[NewVehicle.VehicleId].iModelID = NewVehicle.iVehicleType;
 
-	AppendLogF("[VEHICLE_ADD:%d] ModelID: %d, Position: %0.2f, %0.2f, %0.2f",
-			   NewVehicle.VehicleId, NewVehicle.iVehicleType, NewVehicle.vecPos[0], NewVehicle.vecPos[1], NewVehicle.vecPos[2]);
-	_logs->Log(LogLevel::DEBUG, "[VEHICLE_ADD:%d] ModelID: %d, Position: %0.2f, %0.2f, %0.2f",
-			   NewVehicle.VehicleId, NewVehicle.iVehicleType, NewVehicle.vecPos[0], NewVehicle.vecPos[1], NewVehicle.vecPos[2]);
+	if (LogSettings.RPC)
+	{
+		AppendLogF("[VEHICLE_ADD:%d] ModelID: %d, Position: %0.2f, %0.2f, %0.2f",
+				   NewVehicle.VehicleId, NewVehicle.iVehicleType, NewVehicle.vecPos[0], NewVehicle.vecPos[1], NewVehicle.vecPos[2]);
+		_logs->Log(LogLevel::DEBUG, "[VEHICLE_ADD:%d] ModelID: %d, Position: %0.2f, %0.2f, %0.2f",
+				   NewVehicle.VehicleId, NewVehicle.iVehicleType, NewVehicle.vecPos[0], NewVehicle.vecPos[1], NewVehicle.vecPos[2]);
+	}
 }
 
 void WorldVehicleRemove(RPCParameters *rpcParams)
@@ -316,8 +336,11 @@ void WorldVehicleRemove(RPCParameters *rpcParams)
 	vehiclePool[VehicleID].iExist = 0;
 	vect3_zero(vehiclePool[VehicleID].fPos);
 
-	AppendLogF("[VEHICLE_REMOVE] %d", VehicleID);
-	_logs->Log(LogLevel::DEBUG, "[VEHICLE_REMOVE] %d", VehicleID);
+	if (LogSettings.RPC)
+	{
+		AppendLogF("[VEHICLE_REMOVE] %d", VehicleID);
+		_logs->Log(LogLevel::DEBUG, "[VEHICLE_REMOVE] %d", VehicleID);
+	}
 }
 
 void WorldActorAdd(RPCParameters *rpcParams)
@@ -346,8 +369,11 @@ void WorldActorAdd(RPCParameters *rpcParams)
 	bsData.Read(fHealth);
 	bsData.Read(bInvulnerable);
 
-	AppendLogF("[WorldActorAdd:%d] skin=%d, posX=%f,posY=%f, posZ=%f, rot=%f, health=%f, invulnerabe=%s", actorId, iSkinId, vecPos.X, vecPos.Y, vecPos.Z, fRotation, fHealth, (bInvulnerable ? "Yes" : "No"));
-	_logs->Log(LogLevel::DEBUG, "[WorldActorAdd:%d] skin=%d, posX=%f,posY=%f, posZ=%f, rot=%f, health=%f, invulnerabe=%s", actorId, iSkinId, vecPos.X, vecPos.Y, vecPos.Z, fRotation, fHealth, (bInvulnerable ? "Yes" : "No"));
+	if (LogSettings.RPC)
+	{
+		AppendLogF("[WorldActorAdd:%d] skin=%d, posX=%f,posY=%f, posZ=%f, rot=%f, health=%f, invulnerabe=%s", actorId, iSkinId, vecPos.X, vecPos.Y, vecPos.Z, fRotation, fHealth, (bInvulnerable ? "Yes" : "No"));
+		_logs->Log(LogLevel::DEBUG, "[WorldActorAdd:%d] skin=%d, posX=%f,posY=%f, posZ=%f, rot=%f, health=%f, invulnerabe=%s", actorId, iSkinId, vecPos.X, vecPos.Y, vecPos.Z, fRotation, fHealth, (bInvulnerable ? "Yes" : "No"));
+	}
 }
 
 void WorldActorRemove(RPCParameters *rpcParams)
@@ -364,8 +390,11 @@ void WorldActorRemove(RPCParameters *rpcParams)
 
 	bsData.Read(actorId);
 
-	AppendLogF("[WorldActorRemove:%d] DELETED.", actorId);
-	_logs->Log(LogLevel::DEBUG, "[WorldActorRemove:%d] DELETED.", actorId);
+	if (LogSettings.RPC)
+	{
+		AppendLogF("[WorldActorRemove:%d] DELETED.", actorId);
+		_logs->Log(LogLevel::DEBUG, "[WorldActorRemove:%d] DELETED.", actorId);
+	}
 }
 
 void ConnectionRejected(RPCParameters *rpcParams)
@@ -524,8 +553,11 @@ void SetCheckpoint(RPCParameters *rpcParams)
 
 	CurrentCheckpoint.bActive = true;
 
-	AppendLogF("[CP] Checkpoint set to %.2f %.2f %.2f position. (size: %.2f)", CurrentCheckpoint.fPosition[0], CurrentCheckpoint.fPosition[1], CurrentCheckpoint.fPosition[2], CurrentCheckpoint.fSize);
-	_logs->Log(LogLevel::DEBUG, "[CP] Checkpoint set to %.2f %.2f %.2f position. (size: %.2f)", CurrentCheckpoint.fPosition[0], CurrentCheckpoint.fPosition[1], CurrentCheckpoint.fPosition[2], CurrentCheckpoint.fSize);
+	if (LogSettings.RPC)
+	{
+		AppendLogF("[CP] Checkpoint set to %.2f %.2f %.2f position. (size: %.2f)", CurrentCheckpoint.fPosition[0], CurrentCheckpoint.fPosition[1], CurrentCheckpoint.fPosition[2], CurrentCheckpoint.fSize);
+		_logs->Log(LogLevel::DEBUG, "[CP] Checkpoint set to %.2f %.2f %.2f position. (size: %.2f)", CurrentCheckpoint.fPosition[0], CurrentCheckpoint.fPosition[1], CurrentCheckpoint.fPosition[2], CurrentCheckpoint.fSize);
+	}
 }
 
 void DisableCheckpoint(RPCParameters *rpcParams)
@@ -535,8 +567,11 @@ void DisableCheckpoint(RPCParameters *rpcParams)
 
 	CurrentCheckpoint.bActive = false;
 
-	AppendLogF("[CP] Current checkpoint disabled.");
-	_logs->Log(LogLevel::DEBUG, "[CP] Current checkpoint disabled.");
+	if (LogSettings.RPC)
+	{
+		AppendLogF("[CP] Current checkpoint disabled.");
+		_logs->Log(LogLevel::DEBUG, "[CP] Current checkpoint disabled.");
+	}
 }
 
 void SetRaceCheckpoint(RPCParameters *rpcParams)
@@ -561,8 +596,11 @@ void SetRaceCheckpoint(RPCParameters *rpcParams)
 
 	CurrentCheckpoint.bActive = true;
 
-	AppendLogF("[rCP] Race Checkpoint set to %.2f %.2f %.2f position. Next Race Checkpoint set to %.2f %.2f %.2f position.", pos.X, pos.Y, pos.Z, next.X, next.Y, next.Z);
-	_logs->Log(LogLevel::DEBUG, "[rCP] Race Checkpoint set to %.2f %.2f %.2f position. Next Race Checkpoint set to %.2f %.2f %.2f position.", pos.X, pos.Y, pos.Z, next.X, next.Y, next.Z);
+	if (LogSettings.RPC)
+	{
+		AppendLogF("[rCP] Race Checkpoint set to %.2f %.2f %.2f position. Next Race Checkpoint set to %.2f %.2f %.2f position.", pos.X, pos.Y, pos.Z, next.X, next.Y, next.Z);
+		_logs->Log(LogLevel::DEBUG, "[rCP] Race Checkpoint set to %.2f %.2f %.2f position. Next Race Checkpoint set to %.2f %.2f %.2f position.", pos.X, pos.Y, pos.Z, next.X, next.Y, next.Z);
+	}
 }
 
 void DisableRaceCheckpoint(RPCParameters *rpcParams)
@@ -572,8 +610,11 @@ void DisableRaceCheckpoint(RPCParameters *rpcParams)
 
 	CurrentCheckpoint.bActive = false;
 
-	AppendLogF("[rCP] Race Current checkpoint disabled.");
-	_logs->Log(LogLevel::DEBUG, "[rCP] Race Current checkpoint disabled.");
+	if (LogSettings.RPC)
+	{
+		AppendLogF("[rCP] Race Current checkpoint disabled.");
+		_logs->Log(LogLevel::DEBUG, "[rCP] Race Current checkpoint disabled.");
+	}
 }
 
 void Pickup(RPCParameters *rpcParams)
@@ -599,8 +640,11 @@ void Pickup(RPCParameters *rpcParams)
 
 		if (settings.uiPickupsLogging != 0)
 		{
-			AppendLogF("[CREATEPICKUP] ID: %d | Model: %d | Type: %d | X: %.2f | Y: %.2f | Z: %.2f", PickupID, Pickup.iModelID, Pickup.iType, Pickup.fPosX, Pickup.fPosY, Pickup.fPosZ);
-			_logs->Log(LogLevel::DEBUG, "[CREATEPICKUP] ID: %d | Model: %d | Type: %d | X: %.2f | Y: %.2f | Z: %.2f", PickupID, Pickup.iModelID, Pickup.iType, Pickup.fPosX, Pickup.fPosY, Pickup.fPosZ);
+			if (LogSettings.RPC)
+			{
+				AppendLogF("[CREATEPICKUP] ID: %d | Model: %d | Type: %d | X: %.2f | Y: %.2f | Z: %.2f", PickupID, Pickup.iModelID, Pickup.iType, Pickup.fPosX, Pickup.fPosY, Pickup.fPosZ);
+				_logs->Log(LogLevel::DEBUG, "[CREATEPICKUP] ID: %d | Model: %d | Type: %d | X: %.2f | Y: %.2f | Z: %.2f", PickupID, Pickup.iModelID, Pickup.iType, Pickup.fPosX, Pickup.fPosY, Pickup.fPosZ);
+			}
 		}
 	}
 }
@@ -626,8 +670,11 @@ void DestroyPickup(RPCParameters *rpcParams)
 
 		if (settings.uiPickupsLogging != 0)
 		{
-			AppendLogF("[DESTROYPICKUP] %d", PickupID);
-			_logs->Log(LogLevel::DEBUG, "[DESTROYPICKUP] %d", PickupID);
+			if (LogSettings.RPC)
+			{
+				AppendLogF("[DESTROYPICKUP] %d", PickupID);
+				_logs->Log(LogLevel::DEBUG, "[DESTROYPICKUP] %d", PickupID);
+			}
 		}
 	}
 }
@@ -660,8 +707,11 @@ void RequestSpawn(RPCParameters *rpcParams)
 	RakNet::BitStream bsData((unsigned char *)Data, (iBitLength / 8) + 1, false);
 	bsData.Read(byteRequestOutcome);
 
-	AppendLogF("[RequestSpawn] %d", byteRequestOutcome);
-	_logs->Log(LogLevel::DEBUG, "[RequestSpawn] %d", byteRequestOutcome);
+	if (LogSettings.RPC)
+	{
+		AppendLogF("[RequestSpawn] %d", byteRequestOutcome);
+		_logs->Log(LogLevel::DEBUG, "[RequestSpawn] %d", byteRequestOutcome);
+	}
 }
 
 void SetTimeEx(RPCParameters *rpcParams)
@@ -675,8 +725,11 @@ void SetTimeEx(RPCParameters *rpcParams)
 	bsData.Read(byteHour);
 	bsData.Read(byteMinute);
 
-	AppendLogF("[SetTimeEx] %d hour %d minutes", byteHour, byteMinute);
-	_logs->Log(LogLevel::DEBUG, "[SetTimeEx] %d hour %d minutes", byteHour, byteMinute);
+	if (LogSettings.RPC)
+	{
+		AppendLogF("[SetTimeEx] %d hour %d minutes", byteHour, byteMinute);
+		_logs->Log(LogLevel::DEBUG, "[SetTimeEx] %d hour %d minutes", byteHour, byteMinute);
+	}
 }
 
 void ToggleClock(RPCParameters *rpcParams)
@@ -688,8 +741,11 @@ void ToggleClock(RPCParameters *rpcParams)
 	uint8_t byteClock;
 	bsData.Read(byteClock);
 
-	AppendLogF("[ToggleClock] %s", (byteClock ? "TRUE" : "FALSE"));
-	_logs->Log(LogLevel::DEBUG, "[ToggleClock] %s", (byteClock ? "TRUE" : "FALSE"));
+	if (LogSettings.RPC)
+	{
+		AppendLogF("[ToggleClock] %s", (byteClock ? "TRUE" : "FALSE"));
+		_logs->Log(LogLevel::DEBUG, "[ToggleClock] %s", (byteClock ? "TRUE" : "FALSE"));
+	}
 }
 
 void VehicleDestroy(RPCParameters *rpcParams)
@@ -703,8 +759,11 @@ void VehicleDestroy(RPCParameters *rpcParams)
 
 	bsData.Read(VehicleID);
 
-	AppendLogF("[VehicleDestroy:%d] DELETED.", VehicleID);
-	_logs->Log(LogLevel::DEBUG, "[VehicleDestroy:%d] DELETED.", VehicleID);
+	if (LogSettings.RPC)
+	{
+		AppendLogF("[VehicleDestroy:%d] DELETED.", VehicleID);
+		_logs->Log(LogLevel::DEBUG, "[VehicleDestroy:%d] DELETED.", VehicleID);
+	}
 }
 
 void ScrInitMenu(RPCParameters *rpcParams)
@@ -728,8 +787,11 @@ void ScrInitMenu(RPCParameters *rpcParams)
 	float fCol2W = 0.0;
 
 	bsData.Read(BYTEMenuID);
-	AppendLogF("Processing Menu ID %s", BYTEMenuID);
-	_logs->Log(LogLevel::DEBUG, "Processing Menu ID %s", BYTEMenuID);
+	if (LogSettings.RPC)
+	{
+		AppendLogF("Processing Menu ID %s", BYTEMenuID);
+		_logs->Log(LogLevel::DEBUG, "Processing Menu ID %s", BYTEMenuID);
+	}
 	bsData.Read(HasTwoColumns);
 	bsData.Read(GTAMenu.szTitleL);
 	bsData.Read(GTAMenu.szTitle, GTAMenu.szTitleL);
@@ -778,15 +840,21 @@ void ScrInitMenu(RPCParameters *rpcParams)
 				RbsSend.Write(rowID);
 				if(!pRakClient->RPC(&RPC_MenuSelect, &RbsSend, HIGH_PRIORITY, RELIABLE_ORDERED, 0, false, UNASSIGNED_NETWORK_ID, NULL))
 				{
-					AppendLogF("ScrInitMenu -> Something went wrong!");
-					_logs->Log(LogLevel::ERROR, "ScrInitMenu -> Something went wrong!");
+					if (LogSettings.RPC )
+					{
+						AppendLogF("ScrInitMenu -> Something went wrong!");
+						_logs->Log(LogLevel::ERROR, "ScrInitMenu -> Something went wrong!");
+					}
 				}
 			}
 			else {
 				if (!pRakClient->RPC(&RPC_MenuQuit, &RbsSend, HIGH_PRIORITY, RELIABLE_ORDERED, 0, false, UNASSIGNED_NETWORK_ID, NULL))
 				{
-					AppendLogF("ScrInitMenu -> Something went wrong!");
-					_logs->Log(LogLevel::ERROR, "ScrInitMenu -> Something went wrong!");
+					if (LogSettings.RPC )
+					{
+						AppendLogF("ScrInitMenu -> Something went wrong!");
+						_logs->Log(LogLevel::ERROR, "ScrInitMenu -> Something went wrong!");
+					}
 				}
 			} });
 		menuBox.show();
@@ -836,8 +904,11 @@ void ScrDialogBox(RPCParameters *rpcParams)
 	                RbsSend.Write(text.toStdString().c_str(), text.size());
 	                if(!pRakClient->RPC(&RPC_DialogResponse, &RbsSend, HIGH_PRIORITY, RELIABLE_ORDERED, 0, false, UNASSIGNED_NETWORK_ID, NULL))
 					{
-						AppendLogF("ScrDialogBox -> Something went wrong!");
-						_logs->Log(LogLevel::ERROR, "ScrDialogBox -> Something went wrong!");
+						if (LogSettings.RPC )
+						{
+							AppendLogF("ScrDialogBox -> Something went wrong!");
+							_logs->Log(LogLevel::ERROR, "ScrDialogBox -> Something went wrong!");
+						}
 					} });
 			msgBoxDialog.exec();
 		}
@@ -857,8 +928,11 @@ void ScrDialogBox(RPCParameters *rpcParams)
 	                RbsSend.Write(text.toStdString().c_str(), text.size());
 	                if(!pRakClient->RPC(&RPC_DialogResponse, &RbsSend, HIGH_PRIORITY, RELIABLE_ORDERED, 0, false, UNASSIGNED_NETWORK_ID, NULL))
 					{
-						AppendLogF("ScrDialogBox -> Something went wrong!");
-						_logs->Log(LogLevel::ERROR, "ScrDialogBox -> Something went wrong!");
+						if (LogSettings.RPC )
+						{
+							AppendLogF("ScrDialogBox -> Something went wrong!");
+							_logs->Log(LogLevel::ERROR, "ScrDialogBox -> Something went wrong!");
+						}
 					} });
 			msgBoxDialog.exec();
 		}
@@ -878,8 +952,11 @@ void ScrDialogBox(RPCParameters *rpcParams)
 	                RbsSend.Write(text.toStdString().c_str(), text.size());
 	                if(!pRakClient->RPC(&RPC_DialogResponse, &RbsSend, HIGH_PRIORITY, RELIABLE_ORDERED, 0, false, UNASSIGNED_NETWORK_ID, NULL))
 					{
-						AppendLogF("ScrDialogBox -> Something went wrong!");
-						_logs->Log(LogLevel::ERROR, "ScrDialogBox -> Something went wrong!");
+						if (LogSettings.RPC )
+						{
+							AppendLogF("ScrDialogBox -> Something went wrong!");
+							_logs->Log(LogLevel::ERROR, "ScrDialogBox -> Something went wrong!");
+						}
 					} });
 			msgBoxDialog.exec();
 		}
@@ -899,8 +976,11 @@ void ScrDialogBox(RPCParameters *rpcParams)
 	                RbsSend.Write(text.toStdString().c_str(), text.size());
 	                if(!pRakClient->RPC(&RPC_DialogResponse, &RbsSend, HIGH_PRIORITY, RELIABLE_ORDERED, 0, false, UNASSIGNED_NETWORK_ID, NULL))
 					{
-						AppendLogF("ScrDialogBox -> Something went wrong!");
-						_logs->Log(LogLevel::ERROR, "ScrDialogBox -> Something went wrong!");
+						if (LogSettings.RPC )
+						{
+							AppendLogF("ScrDialogBox -> Something went wrong!");
+							_logs->Log(LogLevel::ERROR, "ScrDialogBox -> Something went wrong!");
+						}
 					} });
 			msgBoxDialog.exec();
 		}
@@ -920,8 +1000,11 @@ void ScrDialogBox(RPCParameters *rpcParams)
 	                RbsSend.Write(text.toStdString().c_str(), text.size());
 	                if(!pRakClient->RPC(&RPC_DialogResponse, &RbsSend, HIGH_PRIORITY, RELIABLE_ORDERED, 0, false, UNASSIGNED_NETWORK_ID, NULL))
 					{
-						AppendLogF("ScrDialogBox -> Something went wrong!");
-						_logs->Log(LogLevel::ERROR, "ScrDialogBox -> Something went wrong!");
+						if (LogSettings.RPC )
+						{
+							AppendLogF("ScrDialogBox -> Something went wrong!");
+							_logs->Log(LogLevel::ERROR, "ScrDialogBox -> Something went wrong!");
+						}
 					} });
 			msgBoxDialog.exec();
 		}
@@ -941,8 +1024,11 @@ void ScrDialogBox(RPCParameters *rpcParams)
 	                RbsSend.Write(text.toStdString().c_str(), text.size());
 	                if(!pRakClient->RPC(&RPC_DialogResponse, &RbsSend, HIGH_PRIORITY, RELIABLE_ORDERED, 0, false, UNASSIGNED_NETWORK_ID, NULL))
 					{
-						AppendLogF("ScrDialogBox -> Something went wrong!");
-						_logs->Log(LogLevel::ERROR, "ScrDialogBox -> Something went wrong!");
+						if (LogSettings.RPC )
+						{
+							AppendLogF("ScrDialogBox -> Something went wrong!");
+							_logs->Log(LogLevel::ERROR, "ScrDialogBox -> Something went wrong!");
+						}
 					} });
 			msgBoxDialog.exec();
 		}
@@ -1008,8 +1094,11 @@ void EnterVehicle(RPCParameters *rpcParams)
 			SetState(STATE_DRIVER);
 	}
 
-	AppendLogF("[EnterVehicle]: playerid=%d, vehicleid=%d, ispassenger=%s", playerId, VehicleID, (bytePassenger ? "Yes" : "No"));
-	_logs->Log(LogLevel::DEBUG, "[EnterVehicle]: playerid=%d, vehicleid=%d, ispassenger=%s", playerId, VehicleID, (bytePassenger ? "Yes" : "No"));
+	if (LogSettings.RPC)
+	{
+		AppendLogF("[EnterVehicle]: playerid=%d, vehicleid=%d, ispassenger=%s", playerId, VehicleID, (bytePassenger ? "Yes" : "No"));
+		_logs->Log(LogLevel::DEBUG, "[EnterVehicle]: playerid=%d, vehicleid=%d, ispassenger=%s", playerId, VehicleID, (bytePassenger ? "Yes" : "No"));
+	}
 }
 
 void ExitVehicle(RPCParameters *rpcParams)
@@ -1031,8 +1120,11 @@ void ExitVehicle(RPCParameters *rpcParams)
 	if (playerId == g_myPlayerID)
 		SetState(STATE_ONFOOT);
 
-	AppendLogF("[ExitVehicle]: playerid=%d, vehicleid=%d", playerId, VehicleID);
-	_logs->Log(LogLevel::DEBUG, "[ExitVehicle]: playerid=%d, vehicleid=%d", playerId, VehicleID);
+	if (LogSettings.RPC)
+	{
+		AppendLogF("[ExitVehicle]: playerid=%d, vehicleid=%d", playerId, VehicleID);
+		_logs->Log(LogLevel::DEBUG, "[ExitVehicle]: playerid=%d, vehicleid=%d", playerId, VehicleID);
+	}
 }
 
 void ScrPutPlayerInVehicle(RPCParameters *rpcParams)
@@ -1117,8 +1209,11 @@ void ScrGameText(RPCParameters *rpcParams)
 	szMessage[iLength] = '\0';
 
 	AppendChatBox("[GAMETEXT] %s", szMessage);
-	AppendLogF("[GAMETEXT] %s", szMessage);
-	_logs->Log(LogLevel::DEBUG, "[GAMETEXT] %s", szMessage);
+	if (LogSettings.RPC)
+	{
+		AppendLogF("[GAMETEXT] %s", szMessage);
+		_logs->Log(LogLevel::DEBUG, "[GAMETEXT] %s", szMessage);
+	}
 }
 
 void ScrPlayAudioStream(RPCParameters *rpcParams)
@@ -1134,8 +1229,11 @@ void ScrPlayAudioStream(RPCParameters *rpcParams)
 	bsData.Read(szURL, bURLLen);
 	szURL[bURLLen] = 0;
 
-	AppendLogF("[AUDIO_STREAM] %s", szURL);
-	_logs->Log(LogLevel::DEBUG, "[AUDIO_STREAM] %s", szURL);
+	if (LogSettings.RPC)
+	{
+		AppendLogF("[AUDIO_STREAM] %s", szURL);
+		_logs->Log(LogLevel::DEBUG, "[AUDIO_STREAM] %s", szURL);
+	}
 
 	AudioStream audioStream;
 	audioStream.PlayAudioStream(szURL, 0.5);
@@ -1143,8 +1241,11 @@ void ScrPlayAudioStream(RPCParameters *rpcParams)
 
 void ScrStopAudioStream(RPCParameters *rpcParams)
 {
-	AppendLogF("[AUDIO_STREAM] Stopping...");
-	_logs->Log(LogLevel::DEBUG, "[AUDIO_STREAM] Stopping...");
+	if (LogSettings.RPC)
+	{
+		AppendLogF("[AUDIO_STREAM] Stopping...");
+		_logs->Log(LogLevel::DEBUG, "[AUDIO_STREAM] Stopping...");
+	}
 
 	AudioStream audioStream;
 	audioStream.StopAudioStream();
@@ -1159,8 +1260,11 @@ void ScrSetDrunkLevel(RPCParameters *rpcParams)
 
 	bsData.Read(iDrunkLevel);
 
-	AppendLogF("[DRUNK_LEVEL] %d", iDrunkLevel);
-	_logs->Log(LogLevel::DEBUG, "[DRUNK_LEVEL] %d", iDrunkLevel);
+	if (LogSettings.RPC)
+	{
+		AppendLogF("[DRUNK_LEVEL] %d", iDrunkLevel);
+		_logs->Log(LogLevel::DEBUG, "[DRUNK_LEVEL] %d", iDrunkLevel);
+	}
 }
 
 void ScrHaveSomeMoney(RPCParameters *rpcParams)
@@ -1173,8 +1277,11 @@ void ScrHaveSomeMoney(RPCParameters *rpcParams)
 	int iGivenMoney;
 	bsData.Read(iGivenMoney);
 
-	AppendLogF("[MONEY_CHANGE] %d += %d", iMoney, iGivenMoney);
-	_logs->Log(LogLevel::DEBUG, "[MONEY_CHANGE] %d += %d", iMoney, iGivenMoney);
+	if (LogSettings.RPC)
+	{
+		AppendLogF("[MONEY_CHANGE] %d += %d", iMoney, iGivenMoney);
+		_logs->Log(LogLevel::DEBUG, "[MONEY_CHANGE] %d += %d", iMoney, iGivenMoney);
+	}
 
 	iMoney += iGivenMoney;
 }
@@ -1183,8 +1290,11 @@ void ScrResetMoney(RPCParameters *rpcParams)
 {
 	iMoney = 0;
 
-	AppendLogF("[MONEY_RESET] %d", iMoney);
-	_logs->Log(LogLevel::DEBUG, "[MONEY_RESET] %d", iMoney);
+	if (LogSettings.RPC)
+	{
+		AppendLogF("[MONEY_RESET] %d", iMoney);
+		_logs->Log(LogLevel::DEBUG, "[MONEY_RESET] %d", iMoney);
+	}
 }
 
 void ScrSetPlayerPos(RPCParameters *rpcParams)
@@ -1300,8 +1410,11 @@ void ScrCreateObject(RPCParameters *rpcParams)
 
 	if (settings.uiObjectsLogging != 0)
 	{
-		AppendLogF("[OBJECT] %d, %d, %.3f, %.3f, %.3f, %.3f, %.3f, %.3f, %.2f", ObjectID, ModelID, vecPos[0], vecPos[1], vecPos[2], vecRot[0], vecRot[1], vecRot[2], fDrawDistance);
-		_logs->Log(LogLevel::DEBUG, "[OBJECT] %d, %d, %.3f, %.3f, %.3f, %.3f, %.3f, %.3f, %.2f", ObjectID, ModelID, vecPos[0], vecPos[1], vecPos[2], vecRot[0], vecRot[1], vecRot[2], fDrawDistance);
+		if (LogSettings.RPC)
+		{
+			AppendLogF("[OBJECT] %d, %d, %.3f, %.3f, %.3f, %.3f, %.3f, %.3f, %.2f", ObjectID, ModelID, vecPos[0], vecPos[1], vecPos[2], vecRot[0], vecRot[1], vecRot[2], fDrawDistance);
+			_logs->Log(LogLevel::DEBUG, "[OBJECT] %d, %d, %.3f, %.3f, %.3f, %.3f, %.3f, %.3f, %.2f", ObjectID, ModelID, vecPos[0], vecPos[1], vecPos[2], vecRot[0], vecRot[1], vecRot[2], fDrawDistance);
+		}
 	}
 }
 
@@ -1333,8 +1446,11 @@ void ScrCreate3DTextLabel(RPCParameters *rpcParams)
 
 	stringCompressor->DecodeString(Text, 256, &bsData);
 
-	AppendLogF("[TEXTLABEL:%d] %s (%X, %.3f, %.3f, %.3f, %.2f, %i, %d, %d)", LabelID, Text, dwColor, vecPos[0], vecPos[1], vecPos[2], DrawDistance, UseLOS, PlayerID, VehicleID);
-	_logs->Log(LogLevel::DEBUG, "[TEXTLABEL:%d] %s (%X, %.3f, %.3f, %.3f, %.2f, %i, %d, %d)", LabelID, Text, dwColor, vecPos[0], vecPos[1], vecPos[2], DrawDistance, UseLOS, PlayerID, VehicleID);
+	if (LogSettings.RPC)
+	{
+		AppendLogF("[TEXTLABEL:%d] %s (%X, %.3f, %.3f, %.3f, %.2f, %i, %d, %d)", LabelID, Text, dwColor, vecPos[0], vecPos[1], vecPos[2], DrawDistance, UseLOS, PlayerID, VehicleID);
+		_logs->Log(LogLevel::DEBUG, "[TEXTLABEL:%d] %s (%X, %.3f, %.3f, %.3f, %.2f, %i, %d, %d)", LabelID, Text, dwColor, vecPos[0], vecPos[1], vecPos[2], DrawDistance, UseLOS, PlayerID, VehicleID);
+	}
 }
 
 void ScrUpdate3DTextLabel(RPCParameters *rpcParams)
@@ -1347,8 +1463,11 @@ void ScrUpdate3DTextLabel(RPCParameters *rpcParams)
 	uint16_t LabelID;
 	bsData.Read(LabelID);
 
-	AppendLogF("[TEXTLABEL:%d] DELETED.", LabelID);
-	_logs->Log(LogLevel::DEBUG, "[TEXTLABEL:%d] DELETED.", LabelID);
+	if (LogSettings.RPC)
+	{
+		AppendLogF("[TEXTLABEL:%d] DELETED.", LabelID);
+		_logs->Log(LogLevel::DEBUG, "[TEXTLABEL:%d] DELETED.", LabelID);
+	}
 }
 
 void ScrShowTextDraw(RPCParameters *rpcParams)
@@ -1375,8 +1494,11 @@ void ScrShowTextDraw(RPCParameters *rpcParams)
 
 	if (TextDrawTransmit.BYTESelectable)
 	{
-		AppendLogF("[SELECTABLE-TEXTDRAW] ID: %d, Text: %s.", wTextID, cText);
-		_logs->Log(LogLevel::DEBUG, "[SELECTABLE-TEXTDRAW] ID: %d, Text: %s.", wTextID, cText);
+		if (LogSettings.RPC)
+		{
+			AppendLogF("[SELECTABLE-TEXTDRAW] ID: %d, Text: %s.", wTextID, cText);
+			_logs->Log(LogLevel::DEBUG, "[SELECTABLE-TEXTDRAW] ID: %d, Text: %s.", wTextID, cText);
+		}
 	}
 }
 
@@ -1392,8 +1514,11 @@ void ScrHideTextDraw(RPCParameters *rpcParams)
 
 	if (settings.uiTextDrawsLogging != 0)
 	{
-		AppendLogF("[TEXTDRAW:HIDE] ID: %d.", wTextID);
-		_logs->Log(LogLevel::DEBUG, "[TEXTDRAW:HIDE] ID: %d.", wTextID);
+		if (LogSettings.RPC)
+		{
+			AppendLogF("[TEXTDRAW:HIDE] ID: %d.", wTextID);
+			_logs->Log(LogLevel::DEBUG, "[TEXTDRAW:HIDE] ID: %d.", wTextID);
+		}
 	}
 }
 
@@ -1415,8 +1540,11 @@ void ScrEditTextDraw(RPCParameters *rpcParams)
 
 	if (settings.uiTextDrawsLogging != 0)
 	{
-		AppendLogF("[TEXTDRAW:EDIT] ID: %d, Text: %s.", wTextID, cText);
-		_logs->Log(LogLevel::DEBUG, "[TEXTDRAW:EDIT] ID: %d, Text: %s.", wTextID, cText);
+		if (LogSettings.RPC)
+		{
+			AppendLogF("[TEXTDRAW:EDIT] ID: %d, Text: %s.", wTextID, cText);
+			_logs->Log(LogLevel::DEBUG, "[TEXTDRAW:EDIT] ID: %d, Text: %s.", wTextID, cText);
+		}
 	}
 }
 
@@ -1566,8 +1694,11 @@ void ScrDeathMessage(RPCParameters *rpcParams)
 	}
 
 	AppendChatBox("[DeathMessage] killer=%s killee=%s weapon=%d", szKillerName == NULL ? "??" : szKillerName, szKilleeName == NULL ? "??" : szKillerName, byteWeapon);
-	AppendLogF("[DeathMessage] killer=%s killee=%s weapon=%d", szKillerName == NULL ? "??" : szKillerName, szKilleeName == NULL ? "??" : szKillerName, byteWeapon);
-	_logs->Log(LogLevel::DEBUG, "[DeathMessage] killer=%s killee=%s weapon=%d", szKillerName == NULL ? "??" : szKillerName, szKilleeName == NULL ? "??" : szKillerName, byteWeapon);
+	if (LogSettings.RPC)
+	{
+		AppendLogF("[DeathMessage] killer=%s killee=%s weapon=%d", szKillerName == NULL ? "??" : szKillerName, szKilleeName == NULL ? "??" : szKillerName, byteWeapon);
+		_logs->Log(LogLevel::DEBUG, "[DeathMessage] killer=%s killee=%s weapon=%d", szKillerName == NULL ? "??" : szKillerName, szKilleeName == NULL ? "??" : szKillerName, byteWeapon);
+	}
 }
 
 void ScrSetPlayerWantedLevel(RPCParameters *rpcParams)
@@ -1593,8 +1724,11 @@ void ScrForceClassSelection(RPCParameters *rpcParams)
 	bInClassSelection = true;
 
 	AppendChatBox("[ForceClassSelection] The server is forcing class selection..");
-	AppendLogF("[ForceClassSelection] The server is forcing class selection..");
-	_logs->Log(LogLevel::DEBUG, "[ForceClassSelection] The server is forcing class selection..");
+	if (LogSettings.RPC)
+	{
+		AppendLogF("[ForceClassSelection] The server is forcing class selection..");
+		_logs->Log(LogLevel::DEBUG, "[ForceClassSelection] The server is forcing class selection..");
+	}
 }
 
 void ScrSetPlayerFightingStyle(RPCParameters *rpcParams)
@@ -1615,8 +1749,11 @@ void ScrSetPlayerFightingStyle(RPCParameters *rpcParams)
 
 	playerPool[playerId].onfootData.FightingStyle = fightingStyle;
 
-	AppendLogF("[SetPlayerFightingStyle#%d] CHANGED to %d", playerId, fightingStyle);
-	_logs->Log(LogLevel::DEBUG, "[SetPlayerFightingStyle#%d] CHANGED to %d", playerId, fightingStyle);
+	if (LogSettings.RPC)
+	{
+		AppendLogF("[SetPlayerFightingStyle#%d] CHANGED to %d", playerId, fightingStyle);
+		_logs->Log(LogLevel::DEBUG, "[SetPlayerFightingStyle#%d] CHANGED to %d", playerId, fightingStyle);
+	}
 }
 
 void ScrSetPlayerSkillLevel(RPCParameters *rpcParams)
@@ -1643,8 +1780,11 @@ void ScrSetPlayerSkillLevel(RPCParameters *rpcParams)
 
 	playerPool[playerId].onfootData.SkillLevel[dSkillID] = wSkillLevel;
 
-	AppendLogF("[SetPlayerSkillLevel#%d] CHANGED to skillID=%d skillLevel=%d", playerId, dSkillID, wSkillLevel);
-	_logs->Log(LogLevel::DEBUG, "[SetPlayerSkillLevel#%d] CHANGED to skillID=%d skillLevel=%d", playerId, dSkillID, wSkillLevel);
+	if (LogSettings.RPC)
+	{
+		AppendLogF("[SetPlayerSkillLevel#%d] CHANGED to skillID=%d skillLevel=%d", playerId, dSkillID, wSkillLevel);
+		_logs->Log(LogLevel::DEBUG, "[SetPlayerSkillLevel#%d] CHANGED to skillID=%d skillLevel=%d", playerId, dSkillID, wSkillLevel);
+	}
 }
 
 void ScrSetPlayerTeam(RPCParameters *rpcParams)
@@ -1665,8 +1805,11 @@ void ScrSetPlayerTeam(RPCParameters *rpcParams)
 
 	playerPool[playerId].onfootData.BYTETeam = Team;
 
-	AppendLogF("[SetPlayerTeam#%d] CHANGED to %d", playerId, Team);
-	_logs->Log(LogLevel::DEBUG, "[SetPlayerTeam#%d] CHANGED to %d", playerId, Team);
+	if (LogSettings.RPC)
+	{
+		AppendLogF("[SetPlayerTeam#%d] CHANGED to %d", playerId, Team);
+		_logs->Log(LogLevel::DEBUG, "[SetPlayerTeam#%d] CHANGED to %d", playerId, Team);
+	}
 }
 
 void SetWeather(RPCParameters *rpcParams)
@@ -1681,8 +1824,11 @@ void SetWeather(RPCParameters *rpcParams)
 
 	g_srvWeather = WeatherID;
 
-	AppendLogF("[SetWeather] CHANGED to %d", WeatherID);
-	_logs->Log(LogLevel::DEBUG, "[SetWeather] CHANGED to %d", WeatherID);
+	if (LogSettings.RPC)
+	{
+		AppendLogF("[SetWeather] CHANGED to %d", WeatherID);
+		_logs->Log(LogLevel::DEBUG, "[SetWeather] CHANGED to %d", WeatherID);
+	}
 }
 
 void WorldTime(RPCParameters *rpcParams)
@@ -1697,8 +1843,11 @@ void WorldTime(RPCParameters *rpcParams)
 
 	g_srvWorldTime = bHours;
 
-	AppendLogF("[SetWorldTime] CHANGED to %d", bHours);
-	_logs->Log(LogLevel::DEBUG, "[SetWorldTime] CHANGED to %d", bHours);
+	if (LogSettings.RPC)
+	{
+		AppendLogF("[SetWorldTime] CHANGED to %d", bHours);
+		_logs->Log(LogLevel::DEBUG, "[SetWorldTime] CHANGED to %d", bHours);
+	}
 }
 
 void ScrSetVehiclePos(RPCParameters *rpcParams)
@@ -1722,8 +1871,11 @@ void ScrSetVehiclePos(RPCParameters *rpcParams)
 	vehiclePool[vehicleId].fPos[1] = vehiclePosY;
 	vehiclePool[vehicleId].fPos[2] = vehiclePosZ;
 
-	AppendLogF("[SetVehiclePos#%d] CHANGED to X=%0.2f Y=%0.2f Z=%0.2f", vehicleId, vehiclePosX, vehiclePosY, vehiclePosZ);
-	_logs->Log(LogLevel::DEBUG, "[SetVehiclePos#%d] CHANGED to X=%0.2f Y=%0.2f Z=%0.2ff", vehicleId, vehiclePosX, vehiclePosY, vehiclePosZ);
+	if (LogSettings.RPC)
+	{
+		AppendLogF("[SetVehiclePos#%d] CHANGED to X=%0.2f Y=%0.2f Z=%0.2f", vehicleId, vehiclePosX, vehiclePosY, vehiclePosZ);
+		_logs->Log(LogLevel::DEBUG, "[SetVehiclePos#%d] CHANGED to X=%0.2f Y=%0.2f Z=%0.2ff", vehicleId, vehiclePosX, vehiclePosY, vehiclePosZ);
+	}
 }
 
 void ScrSetVehicleHealth(RPCParameters *rpcParams)
@@ -1743,8 +1895,11 @@ void ScrSetVehicleHealth(RPCParameters *rpcParams)
 
 	vehiclePool[vehicleId].fHealth = vehicleHealth;
 
-	AppendLogF("[SetVehicleHealth#%d] CHANGED to %0.2f", vehicleId, vehicleHealth);
-	_logs->Log(LogLevel::DEBUG, "[SetVehicleHealth#%d] CHANGED to %0.2f", vehicleId, vehicleHealth);
+	if (LogSettings.RPC)
+	{
+		AppendLogF("[SetVehicleHealth#%d] CHANGED to %0.2f", vehicleId, vehicleHealth);
+		_logs->Log(LogLevel::DEBUG, "[SetVehicleHealth#%d] CHANGED to %0.2f", vehicleId, vehicleHealth);
+	}
 }
 
 void ScrLinkVehicleToInterior(RPCParameters *rpcParams)
@@ -1763,14 +1918,20 @@ void ScrLinkVehicleToInterior(RPCParameters *rpcParams)
 
 	vehiclePool[vehicleId].BYTEInterior = vehicleInterior;
 
-	AppendLogF("[LinkVehicleToInterior#%d] CHANGED to %d", vehicleId, vehicleInterior);
-	_logs->Log(LogLevel::DEBUG, "[LinkVehicleToInterior#%d] CHANGED to %d", vehicleId, vehicleInterior);
+	if (LogSettings.RPC)
+	{
+		AppendLogF("[LinkVehicleToInterior#%d] CHANGED to %d", vehicleId, vehicleInterior);
+		_logs->Log(LogLevel::DEBUG, "[LinkVehicleToInterior#%d] CHANGED to %d", vehicleId, vehicleInterior);
+	}
 }
 
 void GameModeRestart(RPCParameters *rpcParams)
 {
-	AppendLogF("[GameModeRestart] The server is restarting..");
-	_logs->Log(LogLevel::DEBUG, "[GameModeRestart] The server is restarting..");
+	if (LogSettings.RPC)
+	{
+		AppendLogF("[GameModeRestart] The server is restarting..");
+		_logs->Log(LogLevel::DEBUG, "[GameModeRestart] The server is restarting..");
+	}
 }
 
 void RegisterRPCs(RakClientInterface *pRakClient)

@@ -11,7 +11,7 @@ void SendOnFootFullSyncData(ONFOOT_SYNC_DATA *pofSync, int sendDeathNoti, PLAYER
 
 	if (dwLastOnFootDataSentTick && dwLastOnFootDataSentTick < (GetTickCount() - iNetModeNormalOnfootSendRate))
 	{
-		if (followPlayerID != (PLAYERID)-1)
+		if (followPlayerID != INVALID_PLAYER_ID)
 		{
 			if (!playerPool[followPlayerID].bIsConnected || !playerPool[followPlayerID].bIsStreamedIn)
 				return;
@@ -208,7 +208,7 @@ void SendAimSyncData(uint32_t dwAmmoInClip, int iReloading, PLAYERID copyFromPla
 		RakNet::BitStream bsAimSync;
 		AIM_SYNC_DATA aimSync;
 
-		if (copyFromPlayer != (PLAYERID)-1)
+		if (copyFromPlayer != INVALID_PLAYER_ID)
 		{
 			if (!playerPool[copyFromPlayer].bIsConnected)
 				return;

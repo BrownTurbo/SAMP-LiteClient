@@ -35,22 +35,31 @@ void Packet_AUTH_KEY(Packet *p, RakClientInterface *pRakClient)
 
 		pRakClient->Send(&bsKey, SYSTEM_PRIORITY, RELIABLE, NULL);
 
-		AppendLogF("[AUTH] %s -> %s", ((char *)p->data + 2), auth_key);
-		_logs->Log(LogLevel::DEBUG, "[AUTH] %s -> %s", ((char *)p->data + 2), auth_key);
+		if (LogSettings.Packet)
+		{
+			AppendLogF("[AUTH] %s -> %s", ((char *)p->data + 2), auth_key);
+			_logs->Log(LogLevel::DEBUG, "[AUTH] %s -> %s", ((char *)p->data + 2), auth_key);
+		}
 	}
 	else
 	{
 #if RECONNECT_ON_ERROR == 1
 		AppendChatBox("Unknown AUTH_IN! (%s), Reconnecting in %d seconds...", ((char *)p->data + 2), iReconnectTime / 1000);
-		AppendLog("Unknown AUTH_IN! (%s), Reconnecting in %d seconds...", ((char *)p->data + 2), iReconnectTime / 1000);
-		_logs->Log(LogLevel::FATAL, "Unknown AUTH_IN! (%s), Reconnecting in %d seconds...", ((char *)p->data + 2), iReconnectTime / 1000);
+		if (LogSettings.Packet)
+		{
+			AppendLog("Unknown AUTH_IN! (%s), Reconnecting in %d seconds...", ((char *)p->data + 2), iReconnectTime / 1000);
+			_logs->Log(LogLevel::FATAL, "Unknown AUTH_IN! (%s), Reconnecting in %d seconds...", ((char *)p->data + 2), iReconnectTime / 1000);
+		}
 		resetPools();
 		SetGameState(GAMESTATE_WAIT_CONNECT);
 #else
 		AppendChatBox("Unknown AUTH_IN! (%s)", ((char *)p->data + 2));
-		AppendLogF("Unknown AUTH_IN! (%s), Reconnecting in %d seconds...", ((char *)p->data + 2), iReconnectTime / 1000);
-		_logs->Log(LogLevel::FATAL, "Unknown AUTH_IN! (%s)", ((char *)p->data + 2));
-		//QApplication::quit();
+		if (LogSettings.Packet)
+		{
+			AppendLogF("Unknown AUTH_IN! (%s), Reconnecting in %d seconds...", ((char *)p->data + 2), iReconnectTime / 1000);
+			_logs->Log(LogLevel::FATAL, "Unknown AUTH_IN! (%s)", ((char *)p->data + 2));
+		}
+		// QApplication::quit();
 #endif
 		WorkerClass worker(Globals::instance().getCentralWidget());
 		worker.moveToThread(QApplication::instance()->thread());
@@ -86,9 +95,11 @@ void Packet_ConnectionSucceeded(Packet *p, RakClientInterface *pRakClient)
 	settings.uiChallange = uiChallenge;
 
 	AppendChatBox("Connected with ID %d. Joining the game...", myPlayerID);
-	AppendLogF("Connected with ID %d. Joining the game...", myPlayerID);
-	_logs->Log(LogLevel::INFO, "Connected with ID %d. Joining the game...", myPlayerID);
-
+	if (LogSettings.Packet)
+	{
+		AppendLogF("Connected with ID %d. Joining the game...", myPlayerID);
+		_logs->Log(LogLevel::INFO, "Connected with ID %d. Joining the game...", myPlayerID);
+	}
 	char ClientVersion[20];
 	NETGAME_VERSION = (startsWith(settings.szClientVersion, "0.3.7") ? NETGAME_37 : NETGAME_3DL);
 	snprintf(ClientVersion, sizeof(ClientVersion), "%s", (startsWith(settings.szClientVersion, "0.3.7") ? "0.3.7-R5" : "0.3DL"));
@@ -151,8 +162,11 @@ void Packet_PlayerSync(Packet *p, RakClientInterface *pRakClient)
 	RakNet::BitStream bsPlayerSync((unsigned char *)p->data, p->length, false);
 	PLAYERID playerId;
 
-	AppendLogF("Packet_PlayerSync: %d \n%s\n", p->length, DumpMem((unsigned char *)p->data, p->length));
-	_logs->Log(LogLevel::DEBUG, "Packet_PlayerSync: %d \n%s\n", p->length, DumpMem((unsigned char *)p->data, p->length));
+	if (LogSettings.Packet)
+	{
+		AppendLogF("Packet_PlayerSync: %d \n%s\n", p->length, DumpMem((unsigned char *)p->data, p->length));
+		_logs->Log(LogLevel::DEBUG, "Packet_PlayerSync: %d \n%s\n", p->length, DumpMem((unsigned char *)p->data, p->length));
+	}
 
 	bool bHasLR, bHasUD;
 	bool bHasSurfInfo, bAnimation;
@@ -285,8 +299,11 @@ void Packet_UnoccupiedSync(Packet *p, RakClientInterface *pRakClient)
 	RakNet::BitStream bsUnocSync((unsigned char *)p->data, p->length, false);
 	PLAYERID playerId;
 
-	AppendLogF("\n%s\n", DumpMem((unsigned char *)p->data + bsUnocSync.GetReadOffset() / 8, p->length));
-	_logs->Log(LogLevel::DEBUG, DumpMem((unsigned char *)p->data + bsUnocSync.GetReadOffset() / 8, p->length));
+	if (LogSettings.Packet)
+	{
+		AppendLogF("\n%s\n", DumpMem((unsigned char *)p->data + bsUnocSync.GetReadOffset() / 8, p->length));
+		_logs->Log(LogLevel::DEBUG, DumpMem((unsigned char *)p->data + bsUnocSync.GetReadOffset() / 8, p->length));
+	}
 
 	if (GetGameState() != GAMESTATE_CONNECTED)
 		return;
@@ -309,8 +326,11 @@ void Packet_AimSync(Packet *p, RakClientInterface *pRakClient)
 	RakNet::BitStream bsAimSync((unsigned char *)p->data, p->length, false);
 	PLAYERID playerId;
 
-	AppendLogF("Packet_AimSync:\n%s\n", DumpMem((unsigned char *)p->data, p->length));
-	_logs->Log(LogLevel::DEBUG, DumpMem((unsigned char *)p->data, p->length));
+	if (LogSettings.Packet)
+	{
+		AppendLogF("Packet_AimSync:\n%s\n", DumpMem((unsigned char *)p->data, p->length));
+		_logs->Log(LogLevel::DEBUG, DumpMem((unsigned char *)p->data, p->length));
+	}
 
 	if (GetGameState() != GAMESTATE_CONNECTED)
 		return;
@@ -336,8 +356,11 @@ void Packet_VehicleSync(Packet *p, RakClientInterface *pRakClient)
 	bool bHydra, bTrain, bTrailer;
 	bool bSiren;
 
-	AppendLogF("Packet_VehicleSync: %d \n%s\n", p->length, DumpMem((unsigned char *)p->data, p->length));
-	_logs->Log(LogLevel::DEBUG, "Packet_VehicleSync: %d \n%s\n", p->length, DumpMem((unsigned char *)p->data, p->length));
+	if (LogSettings.Packet)
+	{
+		AppendLogF("Packet_VehicleSync: %d \n%s\n", p->length, DumpMem((unsigned char *)p->data, p->length));
+		_logs->Log(LogLevel::DEBUG, "Packet_VehicleSync: %d \n%s\n", p->length, DumpMem((unsigned char *)p->data, p->length));
+	}
 	if (GetGameState() != GAMESTATE_CONNECTED)
 		return;
 
@@ -471,8 +494,11 @@ void Packet_PassengerSync(Packet *p, RakClientInterface *pRakClient)
 	PLAYERID playerId;
 	PASSENGER_SYNC_DATA psSync;
 
-	AppendLogF("Packet_PassengerSync:\n%s\n", DumpMem((unsigned char *)p->data, p->length));
-	_logs->Log(LogLevel::DEBUG, DumpMem((unsigned char *)p->data, p->length));
+	if (LogSettings.Packet)
+	{
+		AppendLogF("Packet_PassengerSync:\n%s\n", DumpMem((unsigned char *)p->data, p->length));
+		_logs->Log(LogLevel::DEBUG, DumpMem((unsigned char *)p->data, p->length));
+	}
 
 	if (GetGameState() != GAMESTATE_CONNECTED)
 		return;
@@ -516,8 +542,11 @@ void Packet_TrailerSync(Packet *p, RakClientInterface *pRakClient)
 	PLAYERID playerId;
 	// TRAILER_SYNC_DATA trSync;
 
-	AppendLogF("Packet_TrailerSync:\n%s\n", DumpMem((unsigned char *)p->data, p->length));
-	_logs->Log(LogLevel::DEBUG, DumpMem((unsigned char *)p->data, p->length));
+	if (LogSettings.Packet)
+	{
+		AppendLogF("Packet_TrailerSync:\n%s\n", DumpMem((unsigned char *)p->data, p->length));
+		_logs->Log(LogLevel::DEBUG, DumpMem((unsigned char *)p->data, p->length));
+	}
 
 	if (GetGameState() != GAMESTATE_CONNECTED)
 		return;
@@ -537,8 +566,11 @@ void Packet_MarkersSync(Packet *p, RakClientInterface *pRakClient)
 	short sPosX, sPosY, sPosZ;
 	bool bIsPlayerActive;
 
-	AppendLogF("Packet_MarkersSync:\n%s\n", DumpMem((unsigned char *)p->data, p->length));
-	_logs->Log(LogLevel::DEBUG, DumpMem((unsigned char *)p->data, p->length));
+	if (LogSettings.Packet)
+	{
+		AppendLogF("Packet_MarkersSync:\n%s\n", DumpMem((unsigned char *)p->data, p->length));
+		_logs->Log(LogLevel::DEBUG, DumpMem((unsigned char *)p->data, p->length));
+	}
 
 	if (GetGameState() != GAMESTATE_CONNECTED)
 		return;
@@ -572,8 +604,11 @@ void Packet_MarkersSync(Packet *p, RakClientInterface *pRakClient)
 		playerPool[playerID].onfootData.fCurrentPosition[1] = (float)sPosY;
 		playerPool[playerID].onfootData.fCurrentPosition[2] = (float)sPosZ;
 
-		AppendLogF("Packet_MarkersSync: %d %d %0.2f, %0.2f, %0.2f", playerID, bIsPlayerActive, (float)sPosX, (float)sPosY, (float)sPosZ);
-		_logs->Log(LogLevel::DEBUG, "Packet_MarkersSync: %d %d %0.2f, %0.2f, %0.2f", playerID, bIsPlayerActive, (float)sPosX, (float)sPosY, (float)sPosZ);
+		if (LogSettings.Packet)
+		{
+			AppendLogF("Packet_MarkersSync: %d %d %0.2f, %0.2f, %0.2f", playerID, bIsPlayerActive, (float)sPosX, (float)sPosY, (float)sPosZ);
+			_logs->Log(LogLevel::DEBUG, "Packet_MarkersSync: %d %d %0.2f, %0.2f, %0.2f", playerID, bIsPlayerActive, (float)sPosX, (float)sPosY, (float)sPosZ);
+		}
 	}
 }
 
@@ -581,8 +616,11 @@ void Packet_BulletSync(Packet *p, RakClientInterface *pRakClient)
 {
 	RakNet::BitStream bsBulletSync((unsigned char *)p->data, p->length, false);
 
-	AppendLogF("Packet_BulletSync:\n%s\n", DumpMem((unsigned char *)p->data, p->length));
-	_logs->Log(LogLevel::DEBUG, DumpMem((unsigned char *)p->data, p->length));
+	if (LogSettings.Packet)
+	{
+		AppendLogF("Packet_BulletSync:\n%s\n", DumpMem((unsigned char *)p->data, p->length));
+		_logs->Log(LogLevel::DEBUG, DumpMem((unsigned char *)p->data, p->length));
+	}
 
 	if (GetGameState() != GAMESTATE_CONNECTED)
 		return;
@@ -609,7 +647,7 @@ void Packet_BulletSync(Packet *p, RakClientInterface *pRakClient)
 
 		PLAYERID copyingID = getPlayerIDFromPlayerName(szFollowingPlayerName);
 
-		if (copyingID != (PLAYERID)-1 && (g_myRunMode == RUNMODE_FOLLOWPLAYER || g_myRunMode == RUNMODE_FOLLOWPLAYERSVEHICLE))
+		if (copyingID != INVALID_PLAYER_ID && (g_myRunMode == RUNMODE_FOLLOWPLAYER || g_myRunMode == RUNMODE_FOLLOWPLAYERSVEHICLE))
 		{
 			if (copyingID == PlayerID)
 				SendBulletData(&playerPool[PlayerID].bulletData);
@@ -667,27 +705,27 @@ void UpdateNetwork(RakClientInterface *pRakClient, Packet *pkt)
 		else
 			packetIdentifier = (unsigned char)pkt->data[0];
 
-		AppendLogF("Packet received. PacketID: %d.", pkt->data[0]);
-		_logs->Log(LogLevel::DEBUG, "Packet received. PacketID: %d.", pkt->data[0]);
-		switch (pkt->length)
+		if (LogSettings.Packet)
 		{
-		case 1:
-		{
-			AppendLogF("Packet received. PacketID[0]: %d.", pkt->data[0]);
-			_logs->Log(LogLevel::DEBUG, "Packet received. PacketID[0]: %d.", pkt->data[0]);
-			break;
+			switch (pkt->length)
+			{
+			case 1:
+			{
+				AppendLogF("Packet received. PacketID[0]: %d.", pkt->data[0]);
+				_logs->Log(LogLevel::DEBUG, "Packet received. PacketID[0]: %d.", pkt->data[0]);
+				break;
+			}
+			case 2:
+			{
+				AppendLogF("Packet received. PacketID[0]: %d. PacketID[1]?: %d.", pkt->data[0], pkt->data[1]);
+				_logs->Log(LogLevel::DEBUG, "Packet received. PacketID[0]: %d. PacketID[1]?: %d.", pkt->data[0], pkt->data[1]);
+				break;
+			}
+			default:
+				AppendLogF("Empty packet received.");
+				_logs->Log(LogLevel::DEBUG, "Empty packet received.");
+			}
 		}
-		case 2:
-		{
-			AppendLogF("Packet received. PacketID[0]: %d. PacketID[1]?: %d.", pkt->data[0], pkt->data[1]);
-			_logs->Log(LogLevel::DEBUG, "Packet received. PacketID[0]: %d. PacketID[1]?: %d.", pkt->data[0], pkt->data[1]);
-			break;
-		}
-		default:
-			AppendLogF("Empty packet received.");
-			_logs->Log(LogLevel::DEBUG, "Empty packet received.");
-		}
-
 		switch (packetIdentifier)
 		{
 		case ID_RSA_PUBLIC_KEY_MISMATCH:
@@ -696,18 +734,24 @@ void UpdateNetwork(RakClientInterface *pRakClient, Packet *pkt)
 #if RECONNECT_ON_ERROR == 1
 				AppendChatBox("[<b>%02d:%02d:%02d</b>]Failed to initialize encryption. Reconnecting in %d seconds.",
 							  localTime->tm_hour, localTime->tm_min, localTime->tm_sec, iReconnectTime / 1000);
-				AppendLogF("Failed to initialize encryption. Reconnecting in %d seconds.",
-						   iReconnectTime / 1000);
-				_logs->Log(LogLevel::ERROR, "Failed to initialize encryption. Reconnecting in %d seconds.",
-						   iReconnectTime / 1000);
+				if (LogSettings.Packet)
+				{
+					AppendLogF("Failed to initialize encryption. Reconnecting in %d seconds.",
+							   iReconnectTime / 1000);
+					_logs->Log(LogLevel::ERROR, "Failed to initialize encryption. Reconnecting in %d seconds.",
+							   iReconnectTime / 1000);
+				}
 				resetPools();
 				std::this_thread::sleep_for(std::chrono::milliseconds(500));
 				SetGameState(GAMESTATE_WAIT_CONNECT);
 #else
 				AppendChatBox("[<b>%02d:%02d:%02d</b>]Failed to initialize encryption.",
 							  localTime->tm_hour, localTime->tm_min, localTime->tm_sec);
-				AppendLogF("Failed to initialize encryption.");
-				_logs->Log(LogLevel::ERROR, "Failed to initialize encryption.");
+				if (LogSettings.Packet)
+				{
+					AppendLogF("Failed to initialize encryption.");
+					_logs->Log(LogLevel::ERROR, "Failed to initialize encryption.");
+				}
 				SetGameState(GAMESTATE_DISCONNECTED);
 #endif
 				emit worker.MessageBox(QString::fromUtf8("Error"), QString::fromUtf8("[SAMP] Internal Failure."), QMessageBox::Ok, QMessageBox::Information);
@@ -738,18 +782,24 @@ void UpdateNetwork(RakClientInterface *pRakClient, Packet *pkt)
 #if RECONNECT_ON_ERROR == 1
 				AppendChatBox("[<b>%02d:%02d:%02d</b>]Connection was closed by the server. Reconnecting in %d seconds.",
 							  localTime->tm_hour, localTime->tm_min, localTime->tm_sec, iReconnectTime / 1000);
-				AppendLogF("Connection was closed by the server. Reconnecting in %d seconds.",
-						   iReconnectTime / 1000);
-				_logs->Log(LogLevel::INFO, "Connection was closed by the server. Reconnecting in %d seconds.",
-						   iReconnectTime / 1000);
+				if (LogSettings.Packet)
+				{
+					AppendLogF("Connection was closed by the server. Reconnecting in %d seconds.",
+							   iReconnectTime / 1000);
+					_logs->Log(LogLevel::INFO, "Connection was closed by the server. Reconnecting in %d seconds.",
+							   iReconnectTime / 1000);
+				}
 				resetPools();
 				std::this_thread::sleep_for(std::chrono::milliseconds(500));
 				SetGameState(GAMESTATE_WAIT_CONNECT);
 #else
 				AppendChatBox("[<b>%02d:%02d:%02d</b>]Connection was closed by the server.",
 							  localTime->tm_hour, localTime->tm_min, localTime->tm_sec);
-				AppendLogF("Connection was closed by the server.");
-				_logs->Log(LogLevel::INFO, "Connection was closed by the server.");
+				if (LogSettings.Packet)
+				{
+					AppendLogF("Connection was closed by the server.");
+					_logs->Log(LogLevel::INFO, "Connection was closed by the server.");
+				}
 				SetGameState(GAMESTATE_DISCONNECTED);
 #endif
 				emit worker.MessageBox(QString::fromUtf8("Error"), QString::fromUtf8("[SAMP] Connection was closed by the server."), QMessageBox::Ok, QMessageBox::Critical);
@@ -773,7 +823,7 @@ void UpdateNetwork(RakClientInterface *pRakClient, Packet *pkt)
 					break;
 				}
 				connectBtn->setText("Connect");
-				Scoreboard* scoreboard_ = new Scoreboard(getMainWidget());
+				Scoreboard *scoreboard_ = new Scoreboard(getMainWidget());
 				QMetaObject::invokeMethod(getMainWindow(), [=]()
 										  { if (scoreboard_) scoreboard_->removePlayer(g_myPlayerID); }, Qt::QueuedConnection);
 			}
@@ -784,18 +834,24 @@ void UpdateNetwork(RakClientInterface *pRakClient, Packet *pkt)
 #if RECONNECT_ON_ERROR == 1
 				AppendChatBox("[<b>%02d:%02d:%02d</b>]You are banned.. Reconnecting in %d seconds.",
 							  localTime->tm_hour, localTime->tm_min, localTime->tm_sec, iReconnectTime / 1000);
-				AppendLogF("You are banned.. Reconnecting in %d seconds.",
-						   iReconnectTime / 1000);
-				_logs->Log(LogLevel::INFO, "You are banned.. Reconnecting in %d seconds.",
-						   iReconnectTime / 1000);
+				if (LogSettings.Packet)
+				{
+					AppendLogF("You are banned.. Reconnecting in %d seconds.",
+							   iReconnectTime / 1000);
+					_logs->Log(LogLevel::INFO, "You are banned.. Reconnecting in %d seconds.",
+							   iReconnectTime / 1000);
+				}
 				resetPools();
 				std::this_thread::sleep_for(std::chrono::milliseconds(500));
 				SetGameState(GAMESTATE_WAIT_CONNECT);
 #else
 				AppendChatBox("[<b>%02d:%02d:%02d</b>]You are banned..",
 							  localTime->tm_hour, localTime->tm_min, localTime->tm_sec);
-				AppendLogF("You are banned..");
-				_logs->Log(LogLevel::INFO, "You are banned..");
+				if (LogSettings.Packet)
+				{
+					AppendLogF("You are banned..");
+					_logs->Log(LogLevel::INFO, "You are banned..");
+				}
 				SetGameState(GAMESTATE_DISCONNECTED);
 #endif
 				emit worker.MessageBox(QString::fromUtf8("Information"), QString::fromUtf8("[SAMP] You are banned..."), QMessageBox::Ok, QMessageBox::Information);
@@ -818,7 +874,7 @@ void UpdateNetwork(RakClientInterface *pRakClient, Packet *pkt)
 					break;
 				}
 				connectBtn->setText("Connect");
-				Scoreboard* scoreboard_ = new Scoreboard(getMainWidget());
+				Scoreboard *scoreboard_ = new Scoreboard(getMainWidget());
 				QMetaObject::invokeMethod(getMainWindow(), [=]()
 										  { if (scoreboard_) scoreboard_->removePlayer(g_myPlayerID); }, Qt::QueuedConnection);
 			}
@@ -836,18 +892,24 @@ void UpdateNetwork(RakClientInterface *pRakClient, Packet *pkt)
 #if RECONNECT_ON_ERROR == 1
 				AppendChatBox("[<b>%02d:%02d:%02d</b>] Connection attempt failed. Reconnecting in %d seconds.",
 							  localTime->tm_hour, localTime->tm_min, localTime->tm_sec, iReconnectTime / 1000);
-				AppendLogF("Connection attempt failed. Reconnecting in %d seconds.",
-						   iReconnectTime / 1000);
-				_logs->Log(LogLevel::INFO, "Connection attempt failed. Reconnecting in %d seconds.",
-						   iReconnectTime / 1000);
+				if (LogSettings.Packet)
+				{
+					AppendLogF("Connection attempt failed. Reconnecting in %d seconds.",
+							   iReconnectTime / 1000);
+					_logs->Log(LogLevel::INFO, "Connection attempt failed. Reconnecting in %d seconds.",
+							   iReconnectTime / 1000);
+				}
 				resetPools();
 				std::this_thread::sleep_for(std::chrono::milliseconds(500));
 				SetGameState(GAMESTATE_WAIT_CONNECT);
 #else
 				AppendChatBox("[<b>%02d:%02d:%02d</b>] Connection attempt failed.",
 							  localTime->tm_hour, localTime->tm_min, localTime->tm_sec);
-				AppendLogF("Connection attempt failed.");
-				_logs->Log(LogLevel::INFO, "Connection attempt failed.");
+				if (LogSettings.Packet)
+				{
+					AppendLogF("Connection attempt failed.");
+					_logs->Log(LogLevel::INFO, "Connection attempt failed.");
+				}
 				SetGameState(GAMESTATE_DISCONNECTED);
 #endif
 				emit worker.MessageBox(QString::fromUtf8("Error"), QString::fromUtf8("[SAMP] Connection attempt failed."), QMessageBox::Ok, QMessageBox::Critical);
@@ -866,7 +928,7 @@ void UpdateNetwork(RakClientInterface *pRakClient, Packet *pkt)
 					break;
 				}
 				connectBtn->setText("Connect");
-				Scoreboard* scoreboard_ = new Scoreboard(getMainWidget());
+				Scoreboard *scoreboard_ = new Scoreboard(getMainWidget());
 			}
 			break;
 		case ID_NO_FREE_INCOMING_CONNECTIONS:
@@ -875,18 +937,24 @@ void UpdateNetwork(RakClientInterface *pRakClient, Packet *pkt)
 #if RECONNECT_ON_ERROR == 1
 				AppendChatBox("[<b>%02d:%02d:%02d</b>]The server is full. Reconnecting in %d seconds.",
 							  localTime->tm_hour, localTime->tm_min, localTime->tm_sec, iReconnectTime / 1000);
-				AppendLogF("The server is full. Reconnecting in %d seconds.",
-						   iReconnectTime / 1000);
-				_logs->Log(LogLevel::INFO, "The server is full. Reconnecting in %d seconds.",
-						   iReconnectTime / 1000);
+				if (LogSettings.Packet)
+				{
+					AppendLogF("The server is full. Reconnecting in %d seconds.",
+							   iReconnectTime / 1000);
+					_logs->Log(LogLevel::INFO, "The server is full. Reconnecting in %d seconds.",
+							   iReconnectTime / 1000);
+				}
 				resetPools();
 				std::this_thread::sleep_for(std::chrono::milliseconds(500));
 				SetGameState(GAMESTATE_WAIT_CONNECT);
 #else
 				AppendChatBox("[<b>%02d:%02d:%02d</b>]The server is full.",
 							  localTime->tm_hour, localTime->tm_min, localTime->tm_sec);
-				AppendLogF("The server is full.");
-				_logs->Log(LogLevel::INFO, "The server is full.");
+				if (LogSettings.Packet)
+				{
+					AppendLogF("The server is full.");
+					_logs->Log(LogLevel::INFO, "The server is full.");
+				}
 				SetGameState(GAMESTATE_DISCONNECTED);
 #endif
 				emit worker.MessageBox(QString::fromUtf8("Error"), QString::fromUtf8("[SAMP] The server is full."), QMessageBox::Ok, QMessageBox::Critical);
@@ -917,18 +985,24 @@ void UpdateNetwork(RakClientInterface *pRakClient, Packet *pkt)
 #if RECONNECT_ON_ERROR == 1
 				AppendChatBox("[<b>%02d:%02d:%02d</b>]Invalid password. Reconnecting in %d seconds.",
 							  localTime->tm_hour, localTime->tm_min, localTime->tm_sec, iReconnectTime / 1000);
-				AppendLogF("Invalid password. Reconnecting in %d seconds.",
-						   iReconnectTime / 1000);
-				_logs->Log(LogLevel::INFO, "Invalid password. Reconnecting in %d seconds.",
-						   iReconnectTime / 1000);
+				if (LogSettings.Packet)
+				{
+					AppendLogF("Invalid password. Reconnecting in %d seconds.",
+							   iReconnectTime / 1000);
+					_logs->Log(LogLevel::INFO, "Invalid password. Reconnecting in %d seconds.",
+							   iReconnectTime / 1000);
+				}
 				resetPools();
 				std::this_thread::sleep_for(std::chrono::milliseconds(500));
 				SetGameState(GAMESTATE_WAIT_CONNECT);
 #else
 				AppendChatBox("[<b>%02d:%02d:%02d</b>]Invalid password.",
 							  localTime->tm_hour, localTime->tm_min, localTime->tm_sec);
-				AppendLogF("Invalid password.");
-				_logs->Log(LogLevel::ERROR, "Invalid password.");
+				if (LogSettings.Packet)
+				{
+					AppendLogF("Invalid password.");
+					_logs->Log(LogLevel::ERROR, "Invalid password.");
+				}
 				SetGameState(GAMESTATE_DISCONNECTED);
 #endif
 				emit worker.MessageBox(QString::fromUtf8("Error"), QString::fromUtf8("[SAMP] Invalid password."), QMessageBox::Ok, QMessageBox::Critical);
@@ -960,18 +1034,24 @@ void UpdateNetwork(RakClientInterface *pRakClient, Packet *pkt)
 #if RECONNECT_ON_ERROR == 1
 				AppendChatBox("[<b>%02d:%02d:%02d</b>]The connection was lost. Reconnecting in %d seconds.",
 							  localTime->tm_hour, localTime->tm_min, localTime->tm_sec, iReconnectTime / 1000);
-				AppendLogF("The connection was lost. Reconnecting in %d seconds.",
-						   iReconnectTime / 1000);
-				_logs->Log(LogLevel::INFO, "The connection was lost. Reconnecting in %d seconds.",
-						   iReconnectTime / 1000);
+				if (LogSettings.Packet)
+				{
+					AppendLogF("The connection was lost. Reconnecting in %d seconds.",
+							   iReconnectTime / 1000);
+					_logs->Log(LogLevel::INFO, "The connection was lost. Reconnecting in %d seconds.",
+							   iReconnectTime / 1000);
+				}
 				resetPools();
 				std::this_thread::sleep_for(std::chrono::milliseconds(500));
 				SetGameState(GAMESTATE_WAIT_CONNECT);
 #else
 				AppendChatBox("[<b>%02d:%02d:%02d</b>]The connection was lost.",
 							  localTime->tm_hour, localTime->tm_min, localTime->tm_sec);
-				AppendLogF("The connection was lost.");
-				_logs->Log(LogLevel::INFO, "The connection was lost.");
+				if (LogSettings.Packet)
+				{
+					AppendLogF("The connection was lost.");
+					_logs->Log(LogLevel::INFO, "The connection was lost.");
+				}
 				SetGameState(GAMESTATE_DISCONNECTED);
 #endif
 				emit worker.MessageBox(QString::fromUtf8("Error"), QString::fromUtf8("[SAMP] The connection was lost."), QMessageBox::Ok, QMessageBox::Critical);
@@ -994,7 +1074,7 @@ void UpdateNetwork(RakClientInterface *pRakClient, Packet *pkt)
 					break;
 				}
 				connectBtn->setText("Connect");
-				Scoreboard* scoreboard_ = new Scoreboard(getMainWidget());
+				Scoreboard *scoreboard_ = new Scoreboard(getMainWidget());
 				QMetaObject::invokeMethod(getMainWindow(), [=]()
 										  { if (scoreboard_) scoreboard_->removePlayer(g_myPlayerID); }, Qt::QueuedConnection);
 			}
@@ -1031,10 +1111,13 @@ void UpdateNetwork(RakClientInterface *pRakClient, Packet *pkt)
 			break;
 		default:
 		{
-			AppendLogF("Received a strange packet ID %d",
-					   packetIdentifier);
-			_logs->Log(LogLevel::DEBUG, "Received a strange packet ID %d",
-					   packetIdentifier);
+			if (LogSettings.Packet)
+			{
+				AppendLogF("Received a strange packet ID %d",
+						   packetIdentifier);
+				_logs->Log(LogLevel::DEBUG, "Received a strange packet ID %d",
+						   packetIdentifier);
+			}
 		}
 		}
 
@@ -1047,8 +1130,11 @@ void UpdateNetwork(RakClientInterface *pRakClient, Packet *pkt)
 		{
 			AppendChatBox("[<b>%02d:%02d:%02d</b>] No response from server. Attempting to reconnect in %d seconds", localTime->tm_hour, localTime->tm_min, localTime->tm_sec, iReconnectTime / 1000);
 			/*emit worker.setStateMessage("Probably disconnected.");*/
-			AppendLogF("Packet Receiver returned NULL. No response from server.");
-			_logs->Log(LogLevel::DEBUG, "Packet Receiver returned NULL. No response from server.");
+			if (LogSettings.Packet)
+			{
+				AppendLogF("Packet Receiver returned NULL. No response from server.");
+				_logs->Log(LogLevel::DEBUG, "Packet Receiver returned NULL. No response from server.");
+			}
 			// SetGameState(GAMESTATE_WAIT_CONNECT);
 			receivedResponse = true;
 		}

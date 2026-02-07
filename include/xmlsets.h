@@ -49,6 +49,13 @@ struct stSettings
 };
 extern struct stSettings settings;
 
+struct stLogging
+{
+	bool RPC;
+	bool Packet;
+};
+extern struct stLogging LogSettings;
+
 void LoadSettings();
 void UnLoadSettings();
 void ReloadSettings();

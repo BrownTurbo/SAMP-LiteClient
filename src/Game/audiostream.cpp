@@ -36,9 +36,11 @@ bool AudioStream::PlayAudioStream(QString audioUrl, qreal volume)
     mediaPlayer->setSource(QUrl(audioUrl));
 
     mediaPlayer->play();
-    AppendLogF("[RPC]-> Playing audio from:", audioUrl);
-    _logs->Log(LogLevel::INFO, "[RPC]-> Playing audio from:", audioUrl);
-
+    if (LogSettings.RPC)
+    {
+        AppendLogF("[RPC]-> Playing audio from:", audioUrl);
+        _logs->Log(LogLevel::INFO, "[RPC]-> Playing audio from:", audioUrl);
+    }
     return _RET;
 }
 
@@ -46,8 +48,11 @@ bool AudioStream::StopAudioStream()
 {
     if (mediaPlayer == nullptr)
         return false;
-    AppendLogF("[RPC]-> StopAudioStream.");
-    _logs->Log(LogLevel::INFO, "[RPC]-> StopAudioStream.");
+    if (LogSettings.RPC)
+    {
+        AppendLogF("[RPC]-> StopAudioStream.");
+        _logs->Log(LogLevel::INFO, "[RPC]-> StopAudioStream.");
+    }
     mediaPlayer->stop();
     return (mediaPlayer->playbackState() == QMediaPlayer::StoppedState);
 }
@@ -56,8 +61,11 @@ bool AudioStream::PauseAudioStream()
 {
     if (mediaPlayer == nullptr)
         return false;
-    AppendLogF("[REQ]-> PauseAudioStream.");
-    _logs->Log(LogLevel::INFO, "[RPC]-> PauseAudioStream.");
+    if (LogSettings.RPC)
+    {
+        AppendLogF("[REQ]-> PauseAudioStream.");
+        _logs->Log(LogLevel::INFO, "[RPC]-> PauseAudioStream.");
+    }
     mediaPlayer->pause();
     return (mediaPlayer->playbackState() == QMediaPlayer::PausedState);
 }

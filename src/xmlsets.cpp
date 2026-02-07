@@ -1,6 +1,7 @@
 #include "../include/xmlsets.h"
 
 struct stSettings settings;
+struct stLogging LogSettings;
 tinyxml2::XMLDocument *xmlSettings = new tinyxml2::XMLDocument();
 
 void LoadSettings()
@@ -84,8 +85,14 @@ void LoadSettings()
 				strcpy(settings.server.szPassword, (char *)serverElement->Attribute("password"));
 			}
 		}
-	}
 
+		tinyxml2::XMLElement *LoggingElement = rakSAMPElement->FirstChildElement("log");
+		if (LoggingElement)
+		{
+			LogSettings.RPC = static_cast<bool>(LoggingElement->IntAttribute("rpc", 0));
+			LogSettings.Packet = static_cast<bool>(LoggingElement->IntAttribute("pkt", 0));
+		}
+	}
 	xmlSettings->Clear();
 	free(filePath);
 	delete xmlSettings;
@@ -94,6 +101,7 @@ void LoadSettings()
 void UnLoadSettings()
 {
 	memset(&settings, 0, sizeof(settings));
+	memset(&LogSettings, 0, sizeof(LogSettings));
 }
 
 void ReloadSettings()

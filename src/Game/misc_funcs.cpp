@@ -27,7 +27,7 @@ void onFootUpdateAtNormalPos()
 	memset(&aimSync, 0, sizeof(AIM_SYNC_DATA));
 
 	playerPool[g_myPlayerID].aimData.BYTECamMode = 4;
-	playerPool[g_myPlayerID].aimData.vecAimf1[0] = 0.1f;
+	playerPool[g_myPlayerID].aimData.vecAimf1[0] = 0.1f;																			
 	playerPool[g_myPlayerID].aimData.vecAimf1[1] = 0.1f;
 	playerPool[g_myPlayerID].aimData.vecAimf1[2] = 0.1f;
 	playerPool[g_myPlayerID].aimData.vecAimPos[0] = playerPool[g_myPlayerID].onfootData.fCurrentPosition[0];

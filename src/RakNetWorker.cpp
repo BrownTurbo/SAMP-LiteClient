@@ -180,7 +180,7 @@ void RakNetWorker::run()
 						if (g_myRunMode == RUNMODE_FOLLOWPLAYER)
 						{
 							PLAYERID copyingID = getPlayerIDFromPlayerName(szFollowingPlayerName);
-							if (copyingID != (PLAYERID)-1)
+							if (copyingID != INVALID_PLAYER_ID)
 								onFootUpdateFollow(copyingID);
 						}
 
@@ -188,7 +188,7 @@ void RakNetWorker::run()
 						if (g_myRunMode == RUNMODE_FOLLOWPLAYERSVEHICLE)
 						{
 							PLAYERID copyingID = getPlayerIDFromPlayerName(szFollowingPlayerName);
-							if (copyingID != (PLAYERID)-1)
+							if (copyingID != INVALID_PLAYER_ID)
 								inCarUpdateFollow(copyingID, (VEHICLEID)iFollowingWithVehicleID);
 						}
 						uUpdateTick = GetTickCount();
