@@ -68,6 +68,18 @@ ServersList::ServersList(QWidget *parent) : QDialog(parent)
     SaveBtn->setFlat(false);
     SaveBtn->setText(QString::fromUtf8("Save"));
     SaveBtn->setCursor(QCursor(Qt::PointingHandCursor));
+    AddBtn = new QPushButton(this);
+    AddBtn->setObjectName(QString::fromUtf8("AddBtn"));
+    AddBtn->setGeometry(QRect(130, 60, 80, 30));
+    AddBtn->setFlat(false);
+    AddBtn->setText(QString::fromUtf8("Add"));
+    AddBtn->setCursor(QCursor(Qt::PointingHandCursor));
+    RmvBtn = new QPushButton(this);
+    RmvBtn->setObjectName(QString::fromUtf8("RmvBtn"));
+    RmvBtn->setGeometry(QRect(130, 80, 80, 30));
+    RmvBtn->setFlat(false);
+    RmvBtn->setText(QString::fromUtf8("Remove"));
+    RmvBtn->setCursor(QCursor(Qt::PointingHandCursor));
     CancelBtn = new QPushButton(this);
     CancelBtn->setObjectName(QString::fromUtf8("CancelBtn"));
     CancelBtn->setGeometry(QRect(470, 320, 80, 30));
@@ -92,6 +104,8 @@ ServersList::ServersList(QWidget *parent) : QDialog(parent)
     HLayout_->addStretch();
     VLayout->addLayout(HLayout_);
     HLayout->addWidget(serverLine);
+    HLayout->addWidget(RmvBtn);
+    HLayout->addWidget(AddBtn);
     HLayout->addWidget(SaveBtn);
     HLayout->addWidget(CancelBtn);
     VLayout->addLayout(HLayout);
@@ -99,11 +113,42 @@ ServersList::ServersList(QWidget *parent) : QDialog(parent)
 
     this->connect(SaveBtn, &QPushButton::clicked, this, &ServersList::onSavePressed);
     this->connect(CancelBtn, &QPushButton::clicked, this, &ServersList::onCancelPressed);
+    this->connect(AddBtn, &QPushButton::clicked, this, &ServersList::onAddPressed);
+    this->connect(RmvBtn, &QPushButton::clicked, this, &ServersList::onRemovePressed);
 
     QMetaObject::connectSlotsByName(this);
 }
 
 ServersList::~ServersList() {}
+
+void ServersList::onAddPressed()
+{
+    WorkerClass worker(Globals::instance().getCentralWidget());
+    worker.moveToThread(QApplication::instance()->thread());
+    srvDTA DTA;
+    QString AddrTXT = lineEdit->text();
+    if (AddrTXT.isEmpty() || AddrTXT.isNull() || !AddrTXT.contains(':') || (AddrTXT.contains(':') && AddrTXT.count(':') > 1))
+    {
+        emit worker.MessageBox(QString::fromUtf8("Error"), QString::fromUtf8("[SAMP] Invalid IP Address."), QMessageBox::Ok, QMessageBox::Information);
+        return;
+    }
+    QStringList AddrParts = AddrTXT.split(':');
+
+    DTA.address = AddrParts.at(0).toUtf8();
+    DTA.port = AddrParts.at(1).toInt();
+
+    if(!ServersList::addServer(DTA))
+    {
+        emit worker.MessageBox(QString::fromUtf8("Error"), QString::fromUtf8("[SAMP] Something went wrong."), QMessageBox::Ok, QMessageBox::Information);
+        return;
+    }
+    emit worker.MessageBox(QString::fromUtf8("Success"), QString::fromUtf8("[SAMP] Server is added successfully."), QMessageBox::Ok, QMessageBox::Information);
+}
+
+void ServersList::onRemovePressed()
+{
+    //serverL->row()
+}
 
 void ServersList::onSavePressed()
 {

@@ -14,6 +14,7 @@
 #include <QtWidgets/QWidget>
 #include <QtWidgets/QVBoxLayout>
 #include <QtWidgets/QHBoxLayout>
+#include <QtCore/QStringList>
 
 #include "./globals.h"
 #include "./utils.h"
@@ -35,6 +36,8 @@ public:
     ~ServersList();
 
 private:
+    void onRemovePressed();
+    void onAddPressed();
     void onSavePressed();
     void onCancelPressed();
 
@@ -42,6 +45,8 @@ private:
     QFrame *serverLine;
     QPushButton *SaveBtn;
     QPushButton *CancelBtn;
+    QPushButton *AddBtn;
+    QPushButton *RmvBtn;
     QLineEdit *lineEdit;
     QLabel *label;
 
