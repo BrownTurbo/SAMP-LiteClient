@@ -188,6 +188,10 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent) {
     threadManager->queueWorker(workerThread);
     threadManager->processNextWorker();
 
+    // Create serverlstWindow BEFORE the intervalWorker connect so the pointer is valid.
+    if (!serverlstWindow)
+        serverlstWindow = new ServersList(this);
+
     // ...
     auto* intervalWorker = new IntervalWorker(750, [](){});
 

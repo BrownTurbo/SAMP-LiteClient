@@ -2,8 +2,8 @@
 
 ServersList::ServersList(QWidget *parent) : QDialog(parent)
 {
-    this->resize(800, 450);
-    this->setFixedSize(800, 450);
+    this->resize(800, 480);
+    this->setFixedSize(800, 480);
     QSizePolicy sizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
     sizePolicy.setHorizontalStretch(0);
     sizePolicy.setVerticalStretch(0);
@@ -12,15 +12,6 @@ ServersList::ServersList(QWidget *parent) : QDialog(parent)
     if (this->objectName().isEmpty())
         this->setObjectName(QString::fromUtf8("ServersLWidget"));
 
-    QVBoxLayout *VLayout = new QVBoxLayout(this);
-    VLayout->setGeometry(QRect(0, 0, 683, 352));
-    VLayout->setContentsMargins(10, 10, 10, 10);
-    VLayout->setSpacing(10);
-    QHBoxLayout *HLayout_ = new QHBoxLayout(this);
-    HLayout_->setGeometry(QRect(0, 1, 351, 348));
-    QHBoxLayout *HLayout = new QHBoxLayout(this);
-    HLayout_->setGeometry(QRect(0, 320, 300, 60));
-    HLayout->addStretch();
     serverL = new QTableWidget(this);
     QFont font;
     font.setBold(true);
@@ -32,18 +23,14 @@ ServersList::ServersList(QWidget *parent) : QDialog(parent)
     if (serverL->columnCount() < colsCount)
         serverL->setColumnCount(colsCount);
 
-    for (int i = 0; i < headers.size(); ++i) {
+    for (int i = 0; i < (int)headers.size(); ++i) {
         auto* headerItem = new QTableWidgetItem(headers[i]);
         headerItem->setTextAlignment(Qt::AlignCenter);
         headerItem->setFont(font);
-
         serverL->setHorizontalHeaderItem(i, headerItem);
     }
 
     serverL->setObjectName(QString::fromUtf8("serverL"));
-    serverL->setGeometry(QRect(0, 4, 450, 400));
-    serverL->setFixedWidth(450);
-    serverL->setFixedHeight(400);
     serverL->setFrameShape(QFrame::Box);
     serverL->setFrameShadow(QFrame::Raised);
     serverL->setLineWidth(1);
@@ -57,58 +44,89 @@ ServersList::ServersList(QWidget *parent) : QDialog(parent)
     serverL->setSelectionMode(QAbstractItemView::SingleSelection);
     serverL->verticalHeader()->setVisible(false);
     serverL->setRowCount(MAX_SERVERS);
+
     serverLine = new QFrame(this);
     serverLine->setObjectName(QString::fromUtf8("serverLine"));
-    serverLine->setGeometry(QRect(302, 280, 371, 71));
     serverLine->setFrameShape(QFrame::HLine);
     serverLine->setFrameShadow(QFrame::Sunken);
+
     SaveBtn = new QPushButton(this);
     SaveBtn->setObjectName(QString::fromUtf8("SaveBtn"));
-    SaveBtn->setGeometry(QRect(560, 320, 80, 30));
     SaveBtn->setFlat(false);
     SaveBtn->setText(QString::fromUtf8("Save"));
     SaveBtn->setCursor(QCursor(Qt::PointingHandCursor));
+    SaveBtn->setFixedWidth(80);
+
     AddBtn = new QPushButton(this);
     AddBtn->setObjectName(QString::fromUtf8("AddBtn"));
-    AddBtn->setGeometry(QRect(130, 60, 80, 30));
     AddBtn->setFlat(false);
     AddBtn->setText(QString::fromUtf8("Add"));
     AddBtn->setCursor(QCursor(Qt::PointingHandCursor));
+    AddBtn->setFixedWidth(80);
+
     RmvBtn = new QPushButton(this);
     RmvBtn->setObjectName(QString::fromUtf8("RmvBtn"));
-    RmvBtn->setGeometry(QRect(130, 80, 80, 30));
     RmvBtn->setFlat(false);
     RmvBtn->setText(QString::fromUtf8("Remove"));
     RmvBtn->setCursor(QCursor(Qt::PointingHandCursor));
+    RmvBtn->setFixedWidth(80);
+
     CancelBtn = new QPushButton(this);
     CancelBtn->setObjectName(QString::fromUtf8("CancelBtn"));
-    CancelBtn->setGeometry(QRect(470, 320, 80, 30));
     CancelBtn->setFlat(false);
     CancelBtn->setText(QString::fromUtf8("Cancel"));
     CancelBtn->setCursor(QCursor(Qt::PointingHandCursor));
+    CancelBtn->setFixedWidth(80);
+
     lineEdit = new QLineEdit(this);
     lineEdit->setObjectName(QString::fromUtf8("lineEdit"));
-    lineEdit->setGeometry(QRect(55, 10, 189, 30));
-    lineEdit->setFixedWidth(189);
-    lineEdit->setFixedHeight(30);
     lineEdit->setText(QString::fromUtf8("127.0.0.1:7777"));
+
     label = new QLabel(this);
     label->setObjectName(QString::fromUtf8("label"));
-    label->setGeometry(QRect(40, 10, 80, 22));
-    label->setFixedWidth(80);
-    label->setFixedHeight(22);
     label->setText(QString::fromUtf8("IP Address:"));
-    HLayout_->addWidget(serverL, 3, Qt::AlignmentFlag::AlignTop);
-    HLayout_->addWidget(label, 1, Qt::AlignmentFlag::AlignTop | Qt::AlignmentFlag::AlignTrailing);
-    HLayout_->addWidget(lineEdit, 1, Qt::AlignmentFlag::AlignTop | Qt::AlignmentFlag::AlignTrailing);
-    HLayout_->addWidget(RmvBtn, 1, Qt::AlignmentFlag::AlignBottom);
-    HLayout_->addWidget(AddBtn, 1, Qt::AlignmentFlag::AlignBottom);
-    HLayout_->addStretch();
-    VLayout->addLayout(HLayout_);
-    HLayout->addWidget(serverLine);
-    HLayout->addWidget(SaveBtn);
-    HLayout->addWidget(CancelBtn);
-    VLayout->addLayout(HLayout);
+
+    // ── Right panel: IP input row + Add/Remove row + stretch ──
+    QVBoxLayout *rightPanel = new QVBoxLayout();
+    rightPanel->setSpacing(8);
+    rightPanel->setContentsMargins(0, 0, 0, 0);
+
+    // Row: "IP Address:" label + lineEdit
+    QHBoxLayout *ipRow = new QHBoxLayout();
+    ipRow->setSpacing(6);
+    ipRow->addWidget(label);
+    ipRow->addWidget(lineEdit, 1);
+
+    // Row: Remove + Add buttons (right-aligned)
+    QHBoxLayout *addRemoveRow = new QHBoxLayout();
+    addRemoveRow->setSpacing(6);
+    addRemoveRow->addStretch();
+    addRemoveRow->addWidget(RmvBtn);
+    addRemoveRow->addWidget(AddBtn);
+
+    rightPanel->addLayout(ipRow);
+    rightPanel->addLayout(addRemoveRow);
+    rightPanel->addStretch();
+
+    // ── Main content row: table | right panel ──
+    QHBoxLayout *contentRow = new QHBoxLayout();
+    contentRow->setSpacing(10);
+    contentRow->addWidget(serverL, 1);
+    contentRow->addLayout(rightPanel);
+
+    // ── Bottom row: separator line + Save/Cancel ──
+    QHBoxLayout *bottomRow = new QHBoxLayout();
+    bottomRow->setSpacing(6);
+    bottomRow->addWidget(serverLine, 1);
+    bottomRow->addWidget(SaveBtn);
+    bottomRow->addWidget(CancelBtn);
+
+    // ── Root vertical layout ──
+    QVBoxLayout *VLayout = new QVBoxLayout(this);
+    VLayout->setContentsMargins(10, 10, 10, 10);
+    VLayout->setSpacing(10);
+    VLayout->addLayout(contentRow, 1);
+    VLayout->addLayout(bottomRow);
     this->setLayout(VLayout);
 
     this->connect(SaveBtn, &QPushButton::clicked, this, &ServersList::onSavePressed);
@@ -147,7 +165,10 @@ void ServersList::onAddPressed()
 
 void ServersList::onRemovePressed()
 {
-    //serverL->row()
+    int row = serverL->currentRow();
+    if (row < 0)
+        return;
+    removeServer(row);
 }
 
 void ServersList::onSavePressed()

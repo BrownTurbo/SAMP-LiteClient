@@ -154,7 +154,7 @@ void QueryAPI::GetSAMPServerInfo(
     }
     uint8_t password = buffer[offset++];
 
-    if (offset + 4 <= (size_t)recvLen)
+    //if (offset + 4 <= (size_t)recvLen)
         //printf("QueryAPI: Players bytes at offset %zu: %02X %02X %02X %02X", offset, buffer[offset], buffer[offset+1], buffer[offset+2], buffer[offset+3]);
 
     if (offset + 2 > (size_t)recvLen) {

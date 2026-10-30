@@ -100,7 +100,7 @@ private:
     WorkerClass *worker;
     QThread *workerThread;
 
-    qreal lastAudioLVL;
+    qreal lastAudioLVL = 0.0;
 };
 
 #endif // MAINWINDOW_H
