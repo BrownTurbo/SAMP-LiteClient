@@ -1,4 +1,5 @@
 #include "../include/RakNetWorker.h"
+#include "../include/mainwindow.h"
 
 RakNetWorker::RakNetWorker() {}
 RakNetWorker::~RakNetWorker() {}
@@ -36,7 +37,7 @@ void RakNetWorker::run()
 		resetPools();
 		RegisterRPCs(pRakClient);
 
-		while (1)
+		while (!QThread::currentThread()->isInterruptionRequested())
 		{
 			if ((GetTickCount() - dwLastConnectAttempt) > iReconnectTime)
 			{
@@ -108,16 +109,20 @@ void RakNetWorker::run()
 					handleProperty(QString::fromUtf8("Player Team"), false, QString::number(playerPool[g_myPlayerID].onfootData.BYTETeam));
 
 					Scoreboard::PlayerDTA ScoreboardDTA;
-					Scoreboard *scoreboard_;
-
 					ScoreboardDTA.id = g_myPlayerID;
 					ScoreboardDTA.name = playerPool[g_myPlayerID].szPlayerName;
 					ScoreboardDTA.score = playerPool[g_myPlayerID].iScore;
 					ScoreboardDTA.ping = playerPool[g_myPlayerID].dwPing;
-					QMetaObject::invokeMethod(getMainWindow(), [=]()
-											  { scoreboard_->handlePlayer(ScoreboardDTA); }, Qt::QueuedConnection);
-					QMetaObject::invokeMethod(getMainWindow(), [=]()
-											  { scoreboard_->updateTableSize(getPlayerCountWoNPC()); }, Qt::QueuedConnection);
+					int playersCount = getPlayerCountWoNPC();
+					QMetaObject::invokeMethod(getMainWindow(), [ScoreboardDTA, playersCount]()
+					{
+						MainWindow* mw = qobject_cast<MainWindow*>(getMainWindow());
+						if (mw && mw->getScoreboardWindow())
+						{
+							mw->getScoreboardWindow()->handlePlayer(ScoreboardDTA);
+							mw->getScoreboardWindow()->updateTableSize(playersCount);
+						}
+					}, Qt::QueuedConnection);
 				}
 
 				if (settings.iUpdateStats)

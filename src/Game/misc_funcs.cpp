@@ -1,4 +1,5 @@
 #include "../../include/Game/misc_funcs.h"
+#include <cmath>
 
 uint32_t dwLastDisconnection = GetTickCount();
 
@@ -16,7 +17,14 @@ void onFootUpdateAtNormalPos()
 
 	ofSync.fHealth = playerPool[g_myPlayerID].onfootData.fHealth;
 	ofSync.fArmour = playerPool[g_myPlayerID].onfootData.fArmour;
-	ofSync.fQuaternion[3] = playerPool[g_myPlayerID].onfootData.fCurrentAngle;
+
+	// Calculate proper unit quaternion from Z-axis rotation angle (degrees)
+	float fAngleRad = (playerPool[g_myPlayerID].onfootData.fCurrentAngle * 3.14159265f) / 180.0f;
+	ofSync.fQuaternion[0] = std::cos(fAngleRad / 2.0f); // W
+	ofSync.fQuaternion[1] = 0.0f;                       // X
+	ofSync.fQuaternion[2] = 0.0f;                       // Y
+	ofSync.fQuaternion[3] = std::sin(fAngleRad / 2.0f); // Z
+
 	ofSync.fCurrentPosition[0] = playerPool[g_myPlayerID].onfootData.fCurrentPosition[0];
 	ofSync.fCurrentPosition[1] = playerPool[g_myPlayerID].onfootData.fCurrentPosition[1];
 	ofSync.fCurrentPosition[2] = playerPool[g_myPlayerID].onfootData.fCurrentPosition[2];
@@ -107,6 +115,18 @@ bool __sampConnect(char *szHostname, int iPort, RakClientInterface *pRakClient)
 {
 	if (GetGameState() != GAMESTATE_WAIT_CONNECT)
 		return false;
+
+	if (!szHostname || szHostname[0] == '\0')
+	{
+		_logs->Log(LogLevel::ERROR, "Connect failed: Hostname/IP address is empty.");
+		return false;
+	}
+	if (iPort <= 0 || iPort > 65535)
+	{
+		_logs->Log(LogLevel::ERROR, "Connect failed: Invalid port %d (must be 1-65535).", iPort);
+		return false;
+	}
+
 	time_t curr_time = time(NULL);
 	struct tm *localTime = localtime(&curr_time);
 	WorkerClass worker(Globals::instance().getCentralWidget());
@@ -132,7 +152,12 @@ bool __sampConnect(char *szHostname, int iPort, RakClientInterface *pRakClient)
 	}
 	connectBtn->setText("Abort");
 
-	return pRakClient->Connect(szHostname, iPort, 0, 0, 5);
+	bool res = pRakClient->Connect(szHostname, iPort, 0, 0, 5);
+	if (!res)
+	{
+		_logs->Log(LogLevel::ERROR, "RakClient->Connect call returned false for %s:%d.", szHostname, iPort);
+	}
+	return res;
 }
 
 int sampConnect(char *szHostname, int iPort, char *szNickname, char *szPassword, RakClientInterface *pRakClient)

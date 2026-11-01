@@ -97,9 +97,6 @@ set(HEADERS
 # Create the executable
 add_executable(${PROJECT_NAME} ${SOURCES} ${HEADERS})
 
-# ...
-target_sources(${PROJECT_NAME} PRIVATE ${SOURCES})
-
 # Link Qt libraries
 target_link_libraries(${PROJECT_NAME} PRIVATE Qt6::Core Qt6::Gui Qt6::Widgets Qt6::Multimedia Qt6::Network)
 
@@ -138,6 +135,10 @@ add_library(QueryAPI ${QUERY_SRC} ${QUERY_HDR})
 
 target_link_libraries(${PROJECT_NAME} PRIVATE RakNet TinyXML QueryAPI)
 
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -O0 -g -lstdc++ -fsanitize=address") ## -fsanitize=thread
+option(ENABLE_ASAN "Enable AddressSanitizer" OFF)
+if(ENABLE_ASAN OR CMAKE_BUILD_TYPE STREQUAL "Debug")
+    add_compile_options(-fsanitize=address -fno-omit-frame-pointer)
+    add_link_options(-fsanitize=address)
+endif()
 
 add_definitions(-DROOT_PATH="${CMAKE_SOURCE_DIR}")

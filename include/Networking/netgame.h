@@ -19,5 +19,5 @@
 
 void resetPools();
 void UpdatePlayerScoresAndPings(int iWait, int iMS, RakClientInterface *pRakClient);
-void UpdateNetwork(RakClientInterface *pRakClient, Packet *pkt);
+void UpdateNetwork(RakClientInterface *pRakClient, Packet *pkt = nullptr);
 #endif

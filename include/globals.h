@@ -50,6 +50,11 @@ public:
         SettingsW = newWidget;
     }
 
+    bool hasLogs() const
+    {
+        return !LogsD.isNull() && (LogsW != nullptr);
+    }
+
     QSharedPointer<QTextBrowser> getLogsD() const
     {
         if (LogsD.isNull())
@@ -102,8 +107,10 @@ public:
     }
 
     void delTXTDLog() {
-        delete TXTDLog;
-        TXTDLog = nullptr;
+        if (TXTDLog) {
+            fclose(TXTDLog);
+            TXTDLog = nullptr;
+        }
     }
 
     FILE* getGNRLLog() const {
@@ -115,8 +122,10 @@ public:
     }
 
     void delGNRLLog() {
-        delete GNRLLog;
-        GNRLLog = nullptr;
+        if (GNRLLog) {
+            fclose(GNRLLog);
+            GNRLLog = nullptr;
+        }
     }
 
     void setMaxPlayers(int maxPlayers) {
@@ -310,7 +319,10 @@ public:
 
 private:
     Globals() : TXTDLog(nullptr), GNRLLog(nullptr), srvMaxPlayers(0), AudioVolume(0), CentralWidget(nullptr) {}
-    ~Globals() {}
+    ~Globals() {
+        delTXTDLog();
+        delGNRLLog();
+    }
 
     Globals(const Globals&) = delete;
     Globals& operator=(const Globals&) = delete;

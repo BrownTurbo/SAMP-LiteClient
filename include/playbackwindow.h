@@ -57,7 +57,7 @@ private:
     struct recData
     {
         QString recF;
-        char *recTitle;
+        QString recTitle;
         VECTOR recPos[1024];
         Playback::ePBType recType;
     };

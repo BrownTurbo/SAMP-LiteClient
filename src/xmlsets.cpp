@@ -2,87 +2,96 @@
 
 struct stSettings settings;
 struct stLogging LogSettings;
-tinyxml2::XMLDocument *xmlSettings = new tinyxml2::XMLDocument();
 
 void LoadSettings()
 {
-	// load
-	size_t filePathSize = strlen(ROOT_PATH) + strlen("/config.xml") + 1;
-	char *filePath = (char *)malloc(filePathSize);
-	sprintf(filePath, "%s/config.xml", ROOT_PATH);
+	char filePath[512];
+	snprintf(filePath, sizeof(filePath), "%s/config.xml", ROOT_PATH ? ROOT_PATH : ".");
 
-	if (filePath == nullptr)
-	{
-		fprintf(stderr, "Failed to allocate memory for filePath\n");
-		QApplication::exit(1);
-	}
-	tinyxml2::XMLError xmlErr = xmlSettings->LoadFile(filePath);
+	tinyxml2::XMLDocument xmlSettings;
+	tinyxml2::XMLError xmlErr = xmlSettings.LoadFile(filePath);
 	if (xmlErr != tinyxml2::XML_SUCCESS)
 	{
+		_logs->Log(LogLevel::FATAL, "Failed to load config file (%s): %s", filePath, xmlSettings.ErrorIDToName(xmlErr));
 		WorkerClass worker(Globals::instance().getCentralWidget());
-		char *ErrMsg = (char *)malloc(70);
-		sprintf(ErrMsg, "Failed to load the config file : %s", xmlSettings->ErrorIDToName(xmlErr));
-		if (ErrMsg != nullptr)
-		{
-			emit worker.MessageBox(QString::fromUtf8("Error"), QString::fromUtf8(ErrMsg), QMessageBox::Ok, QMessageBox::Critical);
-			free(ErrMsg);
-		}
+		QString errMsg = QString("Failed to load config file (%1): %2")
+			.arg(QString::fromUtf8(filePath))
+			.arg(xmlSettings.ErrorIDToName(xmlErr));
+		emit worker.MessageBox(QString::fromUtf8("Error"), errMsg, QMessageBox::Ok, QMessageBox::Critical);
 		QApplication::exit(1);
+		return;
 	}
 
-	tinyxml2::XMLElement *rakSAMPElement = xmlSettings->FirstChildElement("LiteSAMP");
+	tinyxml2::XMLElement *rakSAMPElement = xmlSettings.FirstChildElement("LiteSAMP");
 	if (rakSAMPElement)
 	{
 		// get RespawnTick
 		rakSAMPElement->QueryIntAttribute("respawntick", (int *)&settings.RespawnTick);
+		if (settings.RespawnTick <= 0)
+			settings.RespawnTick = 1000;
 
 		// get data UpdateRate
 		rakSAMPElement->QueryIntAttribute("updaterate", (int *)&settings.UpdateRate);
+		if (settings.UpdateRate <= 0)
+			settings.UpdateRate = 40;
 
 		// get fps simulation
 		rakSAMPElement->QueryIntAttribute("updatestats", (int *)&settings.iUpdateStats);
 
 		// get min simulated fps
 		rakSAMPElement->QueryIntAttribute("minfps", (int *)&settings.iMinFPS);
+		if (settings.iMinFPS <= 0)
+			settings.iMinFPS = 20;
 
 		// get max simulated fps
 		rakSAMPElement->QueryIntAttribute("maxfps", (int *)&settings.iMaxFPS);
+		if (settings.iMaxFPS <= 0)
+			settings.iMaxFPS = 90;
 
 		// get client version
-		strcpy(settings.szClientVersion, (char *)rakSAMPElement->Attribute("clientversion"));
-
-		// get followplayer
-		/*strcpy(settings.szFollowingPlayerName, (char *)rakSAMPElement->Attribute("followplayer"));
-		rakSAMPElement->QueryIntAttribute("followplayerwithvehicleid", &settings.iFollowingWithVehicleID);
-		rakSAMPElement->QueryFloatAttribute("followXOffset", &settings.fFollowXOffset);
-		rakSAMPElement->QueryFloatAttribute("followYOffset", &settings.fFollowYOffset);
-		rakSAMPElement->QueryFloatAttribute("followZOffset", &settings.fFollowZOffset);*/
+		const char *ver = rakSAMPElement->Attribute("clientversion");
+		if (ver)
+		{
+			strncpy(settings.szClientVersion, ver, sizeof(settings.szClientVersion) - 1);
+			settings.szClientVersion[sizeof(settings.szClientVersion) - 1] = '\0';
+		}
 
 		// get the first server
 		tinyxml2::XMLElement *serverElement = rakSAMPElement->FirstChildElement("server");
 		if (serverElement)
 		{
-			char *pszAddr = (char *)serverElement->GetText();
+			const char *pszAddr = serverElement->GetText();
 			if (pszAddr)
 			{
-				int iPort;
-				char *pszAddrBak = pszAddr;
+				char addrBuf[256];
+				strncpy(addrBuf, pszAddr, sizeof(addrBuf) - 1);
+				addrBuf[sizeof(addrBuf) - 1] = '\0';
 
-				while (*pszAddrBak)
+				int iPort = 7777;
+				char *colon = strchr(addrBuf, ':');
+				if (colon)
 				{
-					if (*pszAddrBak == ':')
-					{
-						*pszAddrBak = 0;
-						pszAddrBak++;
-						iPort = atoi(pszAddrBak);
-					}
-					pszAddrBak++;
+					*colon = '\0';
+					iPort = atoi(colon + 1);
 				}
 
-				strcpy(settings.server.szAddr, pszAddr);
+				strncpy(settings.server.szAddr, addrBuf, sizeof(settings.server.szAddr) - 1);
+				settings.server.szAddr[sizeof(settings.server.szAddr) - 1] = '\0';
 				settings.server.iPort = iPort;
-				strcpy(settings.server.szNickname, (char *)serverElement->Attribute("nickname"));
-				strcpy(settings.server.szPassword, (char *)serverElement->Attribute("password"));
+
+				const char *nick = serverElement->Attribute("nickname");
+				if (nick)
+				{
+					strncpy(settings.server.szNickname, nick, sizeof(settings.server.szNickname) - 1);
+					settings.server.szNickname[sizeof(settings.server.szNickname) - 1] = '\0';
+				}
+
+				const char *pass = serverElement->Attribute("password");
+				if (pass)
+				{
+					strncpy(settings.server.szPassword, pass, sizeof(settings.server.szPassword) - 1);
+					settings.server.szPassword[sizeof(settings.server.szPassword) - 1] = '\0';
+				}
 			}
 		}
 
@@ -92,10 +101,10 @@ void LoadSettings()
 			LogSettings.RPC = static_cast<bool>(LoggingElement->IntAttribute("rpc", 0));
 			LogSettings.Packet = static_cast<bool>(LoggingElement->IntAttribute("pkt", 0));
 		}
+
+		_logs->Log(LogLevel::INFO, "[CONFIG] Settings loaded: Nickname='%s', Server=%s:%d, ClientVersion='%s', Logging(RPC=%d, Packet=%d)",
+			settings.server.szNickname, settings.server.szAddr, settings.server.iPort, settings.szClientVersion, LogSettings.RPC, LogSettings.Packet);
 	}
-	xmlSettings->Clear();
-	free(filePath);
-	delete xmlSettings;
 }
 
 void UnLoadSettings()

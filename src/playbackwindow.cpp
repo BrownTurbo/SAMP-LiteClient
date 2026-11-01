@@ -120,20 +120,20 @@ PlaybackWindow::PlaybackWindow(QWidget *parent) : QGroupBox(parent)
     this->connect(UpdStatusTimer, &QTimer::timeout, this, &PlaybackWindow::updateStatusElem);
 
     unsigned short recordsCount = 0;
-    unsigned short linesCount = 0;
     QDir records(Playback::szPlaybackDirectory, "*.rec", QDir::IgnoreCase, QDir::Files | QDir::Readable);
     for (auto const & fileName : records.entryInfoList())
     {
-        recordsCount += 1;
-        if(recordsCount > MAX_RECORDS)
+        if(recordsCount >= MAX_RECORDS)
             break;
+        recordsCount += 1;
+        unsigned short linesCount = 0;
         QFile recF{fileName.absoluteFilePath()};
         recordsData[(recordsCount - 1)].recF = recF.fileName();
+        recordsData[(recordsCount - 1)].recType = Playback::PLAYBACK_TYPE_NONE;
         if (recF.open(QFile::ReadOnly | QFile::Text))
         {
             while (!recF.atEnd())
             {
-                linesCount += 1;
                 QByteArray line = recF.readLine();
                 char const* data = line.constData();
                 unsigned short len = line.size();
@@ -141,39 +141,46 @@ PlaybackWindow::PlaybackWindow(QWidget *parent) : QGroupBox(parent)
                 if (idx < len) {
                     if (strncmp(data + idx, "### ", 4) == 0) {
                         idx += 4;
-                        QString __Data = QString::fromStdString(std::string(data + idx, (size_t)len - idx + 1));
-                        QStringList vars = __Data.split(';');
+                        QString __Data = QString::fromUtf8(data + idx, len - idx).trimmed();
+                        QStringList vars = __Data.split(';', Qt::SkipEmptyParts);
                         for(int varIDX = 0; varIDX < vars.size(); varIDX++)
                         {
                             QStringList var = vars.at(varIDX).split('=');
-                            QString vName = var.at(0);
-                            QString vValue = var.at(1);
-                            if (strcmp(vName.toUtf8().data(), "title"))
+                            if (var.size() < 2) continue;
+                            QString vName = var.at(0).trimmed();
+                            QString vValue = var.at(1).trimmed();
+                            if (vName == "title")
                             {
-                                recordsData[(recordsCount - 1)].recTitle = vValue.toUtf8().data();
+                                recordsData[(recordsCount - 1)].recTitle = vValue;
                             }
                         }
                     }
                     else if (strncmp(data + idx, "# ", 2) == 0) {
+                        if (linesCount >= 1024)
+                            continue;
+                        linesCount += 1;
                         idx += 2;
-                        QString __Data = QString::fromStdString(std::string(data + idx, (size_t)len - idx + 1));
-                        QStringList vars = __Data.split(';');
+                        QString __Data = QString::fromUtf8(data + idx, len - idx).trimmed();
+                        QStringList vars = __Data.split(';', Qt::SkipEmptyParts);
                         for (int varIDX = 0; varIDX < vars.size(); varIDX++)
                         {
                             QStringList var = vars.at(varIDX).split('=');
-                            QString vName = var.at(0);
-                            QString vValue = var.at(1);
-                            if (strcmp(vName.toUtf8().data(), "pos"))
+                            if (var.size() < 2) continue;
+                            QString vName = var.at(0).trimmed();
+                            QString vValue = var.at(1).trimmed();
+                            if (vName == "pos")
                             {
                                 QStringList coords = vValue.split(",");
-                                float X = coords.at(0).toFloat();
-                                float Y = coords.at(1).toFloat();
-                                float Z = coords.at(2).toFloat();
-                                recordsData[(recordsCount - 1)].recPos[(linesCount - 1)].X = X;
-                                recordsData[(recordsCount - 1)].recPos[(linesCount - 1)].Y = Y;
-                                recordsData[(recordsCount - 1)].recPos[(linesCount - 1)].Z = Z;
+                                if (coords.size() >= 3) {
+                                    float X = coords.at(0).toFloat();
+                                    float Y = coords.at(1).toFloat();
+                                    float Z = coords.at(2).toFloat();
+                                    recordsData[(recordsCount - 1)].recPos[(linesCount - 1)].X = X;
+                                    recordsData[(recordsCount - 1)].recPos[(linesCount - 1)].Y = Y;
+                                    recordsData[(recordsCount - 1)].recPos[(linesCount - 1)].Z = Z;
+                                }
                             }
-                            else if (strcmp(vName.toUtf8().data(), "type"))
+                            else if (vName == "type")
                             {
                                 unsigned short recordType = vValue.toUShort();
                                 switch (recordType)
@@ -199,6 +206,7 @@ PlaybackWindow::PlaybackWindow(QWidget *parent) : QGroupBox(parent)
                     }
                 }
             }
+            tableWidget->setRowCount(recordsCount);
             tableWidget->setItem((recordsCount - 1), 0, new QTableWidgetItem(recordsData[(recordsCount - 1)].recTitle));
             tableWidget->setItem((recordsCount - 1), 1, new QTableWidgetItem(QString::fromUtf8(recordsData[(recordsCount - 1)].recType == Playback::PLAYBACK_TYPE_NONE ? "??" : (recordsData[(recordsCount - 1)].recType == Playback::PLAYBACK_TYPE_DRIVER ? "Driver" : "On foot"))));
         }

@@ -13,6 +13,8 @@
 #include <QtWidgets/QHeaderView>
 #include <cstdlib>
 
+#include <unordered_map>
+
 #include "./globals.h"
 #include "./utils.h"
 
@@ -24,8 +26,11 @@ public:
     Scoreboard(QWidget *parent = nullptr);
     ~Scoreboard();
 
+    void clear();
+
 private:
     QTableWidget *tableWidget;
+    std::unordered_map<int, int> playerRowMap;
 
 public:
     struct PlayerDTA

@@ -119,7 +119,7 @@ typedef unsigned short LABELID;
 typedef unsigned short OBJECTID;
 typedef unsigned short PICKUPID;
 
-#pragma pack(1)
+#pragma pack(push, 1)
 typedef struct _VECTOR
 {
 	float X, Y, Z;
@@ -323,6 +323,7 @@ typedef struct _WEAPON_SYNC_DATA
 	uint8_t weaponId;
 	uint8_t weaponAmmo;
 } WEAPON_SYNC_DATA;
+#pragma pack(pop)
 
 struct PlayerPool
 {
@@ -349,6 +350,30 @@ struct PlayerPool
 	BULLET_SYNC_DATA bulletData;
 	VEHICLE_SYNC_DATA vehicleData;
 	WEAPON_SYNC_DATA weaponData[MAX_WEAPON_SLOTS];
+
+	void reset()
+	{
+		bIsConnected = false;
+		bIsStreamedIn = false;
+		bIsControllable = false;
+		bGotMarkersPos = false;
+		iWeaponSlot = 0;
+		memset(szPlayerName, 0, sizeof(szPlayerName));
+		iScore = 0;
+		iWantedLevel = 0;
+		dwPing = 0;
+		bAreWeInAVehicle = 0;
+		BYTEIsNPC = 0;
+		RGBAcolor = 0;
+		HEXcolor.clear();
+		memset(&onfootData, 0, sizeof(onfootData));
+		memset(&incarData, 0, sizeof(incarData));
+		memset(&passengerData, 0, sizeof(passengerData));
+		memset(&aimData, 0, sizeof(aimData));
+		memset(&bulletData, 0, sizeof(bulletData));
+		memset(&vehicleData, 0, sizeof(vehicleData));
+		memset(weaponData, 0, sizeof(weaponData));
+	}
 };
 
 struct stCheckpointData

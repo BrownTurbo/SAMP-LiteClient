@@ -21,6 +21,8 @@ public:
     explicit ConnectWindow(QWidget *parent = nullptr);
     ~ConnectWindow();
 
+    void updateServerInfo();
+
 private:
     void onConnectPressed();
     void onCancelPressed();

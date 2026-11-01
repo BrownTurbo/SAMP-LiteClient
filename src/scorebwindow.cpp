@@ -14,7 +14,7 @@ Scoreboard::Scoreboard(QWidget *parent) : QWidget(parent)
     tableWidget = new QTableWidget(this);
     if (tableWidget->objectName().isEmpty())
         tableWidget->setObjectName(QString::fromUtf8("scoreboard"));
-    tableWidget->setRowCount(Globals::instance().getMaxPlayers());
+    tableWidget->setRowCount(0);
     tableWidget->setColumnCount(4);
     tableWidget->setHorizontalHeaderLabels({ "ID", "Name", "Score", "Ping" });
     tableWidget->horizontalHeader()->setSectionResizeMode(QHeaderView::Stretch);
@@ -32,53 +32,72 @@ Scoreboard::Scoreboard(QWidget *parent) : QWidget(parent)
 
 Scoreboard::~Scoreboard() {}
 
+void Scoreboard::clear()
+{
+    if (tableWidget)
+    {
+        tableWidget->setRowCount(0);
+        playerRowMap.clear();
+    }
+}
+
 void Scoreboard::updateTableSize(int playersCount)
 {
-    if (tableWidget == nullptr)
-        return;
-    if (tableWidget->isHidden())
-        return;
-
-    tableWidget->setRowCount(playersCount);
+    Q_UNUSED(playersCount);
+    // Dense model: rows are dynamically added and removed by handlePlayer and removePlayer.
 }
 
 void Scoreboard::handlePlayer(PlayerDTA player)
 {
-    if (tableWidget == nullptr)
-        return;
-    if (tableWidget->isHidden())
-        return;
-    if (player.id < 0 || player.id >= tableWidget->rowCount())
+    if (tableWidget == nullptr || player.id < 0)
         return;
 
-    if (!isTableWidgetRowEmpty(tableWidget, player.id))
+    int row = -1;
+    auto it = playerRowMap.find(player.id);
+    if (it != playerRowMap.end())
     {
-        for (int col = 0; col < tableWidget->columnCount(); ++col)
-            tableWidget->takeItem(player.id, col);
+        row = it->second;
+    }
+    else
+    {
+        row = tableWidget->rowCount();
+        tableWidget->insertRow(row);
+        playerRowMap[player.id] = row;
     }
 
-    tableWidget->setItem(player.id, 0, new QTableWidgetItem(QString::number(player.id)));
-    tableWidget->setItem(player.id, 1, new QTableWidgetItem(player.name));
-    tableWidget->setItem(player.id, 2, new QTableWidgetItem(QString::number(player.score)));
-    tableWidget->setItem(player.id, 3, new QTableWidgetItem(QString::number(player.ping)));
+    auto updateOrCreateItem = [this, row](int col, const QString &text) {
+        QTableWidgetItem *item = tableWidget->item(row, col);
+        if (!item) {
+            item = new QTableWidgetItem(text);
+            tableWidget->setItem(row, col, item);
+        } else {
+            item->setText(text);
+        }
+    };
+
+    updateOrCreateItem(0, QString::number(player.id));
+    updateOrCreateItem(1, player.name);
+    updateOrCreateItem(2, QString::number(player.score));
+    updateOrCreateItem(3, QString::number(player.ping));
 }
 
 bool Scoreboard::removePlayer(int playerid)
 {
-    if (tableWidget == nullptr)
-        return false;
-    if (tableWidget->isHidden())
-        return false;
-    if (playerid < 0 || playerid >= tableWidget->rowCount())
+    if (tableWidget == nullptr || playerid < 0)
         return false;
 
-    if (isTableWidgetRowEmpty(tableWidget, playerid))
+    auto it = playerRowMap.find(playerid);
+    if (it == playerRowMap.end())
         return false;
 
-    if (tableWidget->item(playerid, 0)->text().toInt() == playerid)
+    int removedRow = it->second;
+    tableWidget->removeRow(removedRow);
+    playerRowMap.erase(it);
+
+    for (auto &pair : playerRowMap)
     {
-        for (int col = 0; col < tableWidget->columnCount(); ++col)
-            tableWidget->takeItem(playerid, col);
+        if (pair.second > removedRow)
+            pair.second--;
     }
     return true;
 }

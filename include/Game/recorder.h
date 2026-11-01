@@ -9,7 +9,7 @@
 // Thanks to 81Vm3 for the base of the Packets Recorder
 namespace PBRecorder {
 	extern int iPlaybackType;
-	extern char *recordTitle;
+	extern char recordTitle[75];
 	extern int iPacketRecorded;
 	extern int iTargetPlayer;
 

@@ -13,7 +13,15 @@
 
 class AudioStream {
 public:
-    qreal *audioVolume;
+    AudioStream();
+    ~AudioStream();
+
+    static AudioStream& instance() {
+        static AudioStream s_instance;
+        return s_instance;
+    }
+
+    qreal *audioVolume = nullptr;
 
 public:
     bool PlayAudioStream(QString audioUrl, qreal volume);
@@ -24,8 +32,8 @@ public:
     bool SetAudioVolume(qreal volume);
 
 private:
-    QAudioOutput *audioOutput;
-    QMediaPlayer *mediaPlayer;
+    QAudioOutput *audioOutput = nullptr;
+    QMediaPlayer *mediaPlayer = nullptr;
 
 private:
     qreal GetSysAudioVolume();

@@ -207,56 +207,65 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent) {
 
     QMetaObject::connectSlotsByName(this);
 
-    Globals::instance().setChatD(QSharedPointer<QTextBrowser>(chatDisplay, [](QTextBrowser * ptr) {
-        if (ptr && !ptr->parent())
-            ptr->deleteLater();
-    }));
-    Globals::instance().setStateL(QSharedPointer<QLabel>(stateMsg, [](QLabel* ptr) {
-        if (ptr && !ptr->parent())
+    QPointer<QTextBrowser> guardedChat(chatDisplay);
+    Globals::instance().setChatD(QSharedPointer<QTextBrowser>(chatDisplay, [guardedChat](QTextBrowser * ptr) {
+        if (guardedChat && ptr && !guardedChat->parent())
             ptr->deleteLater();
     }));
 
-    Globals::instance().setMessageInput(QSharedPointer<QLineEdit>(messageInput, [](QLineEdit * ptr) {
-        if (ptr && !ptr->parent())
-            ptr->deleteLater();
-    }));
-    Globals::instance().setSendButton(QSharedPointer<QPushButton>(sendButton, [](QPushButton * ptr) {
-        if (ptr && !ptr->parent())
+    QPointer<QLabel> guardedState(stateMsg);
+    Globals::instance().setStateL(QSharedPointer<QLabel>(stateMsg, [guardedState](QLabel* ptr) {
+        if (guardedState && ptr && !guardedState->parent())
             ptr->deleteLater();
     }));
 
-    Globals::instance().setConnectButton(QSharedPointer<QPushButton>(rootbtn, [](QPushButton *ptr) {
-        if (ptr && !ptr->parent())
+    QPointer<QLineEdit> guardedInput(messageInput);
+    Globals::instance().setMessageInput(QSharedPointer<QLineEdit>(messageInput, [guardedInput](QLineEdit * ptr) {
+        if (guardedInput && ptr && !guardedInput->parent())
             ptr->deleteLater();
     }));
 
-    Globals::instance().setPlaybackButton(QSharedPointer<QPushButton>(playbackbtn, [](QPushButton *ptr)
-                                                                     {
-        if (ptr && !ptr->parent())
-            ptr->deleteLater(); }));
+    QPointer<QPushButton> guardedSend(sendButton);
+    Globals::instance().setSendButton(QSharedPointer<QPushButton>(sendButton, [guardedSend](QPushButton * ptr) {
+        if (guardedSend && ptr && !guardedSend->parent())
+            ptr->deleteLater();
+    }));
+
+    QPointer<QPushButton> guardedConnect(rootbtn);
+    Globals::instance().setConnectButton(QSharedPointer<QPushButton>(rootbtn, [guardedConnect](QPushButton *ptr) {
+        if (guardedConnect && ptr && !guardedConnect->parent())
+            ptr->deleteLater();
+    }));
+
+    QPointer<QPushButton> guardedPlayback(playbackbtn);
+    Globals::instance().setPlaybackButton(QSharedPointer<QPushButton>(playbackbtn, [guardedPlayback](QPushButton *ptr) {
+        if (guardedPlayback && ptr && !guardedPlayback->parent())
+            ptr->deleteLater();
+    }));
 
     Globals::instance().setCentralWidget(this->centralWidget());
 
-    Globals::instance().setPropertiesTree(QSharedPointer<QStandardItemModel>(treeVmodel, [](QStandardItemModel* ptr) {
-        if (ptr && !ptr->parent())
+    QPointer<QStandardItemModel> guardedTree(treeVmodel);
+    Globals::instance().setPropertiesTree(QSharedPointer<QStandardItemModel>(treeVmodel, [guardedTree](QStandardItemModel* ptr) {
+        if (guardedTree && ptr && !guardedTree->parent())
             ptr->deleteLater();
     }));
 
-    Globals::instance().setStopAudioButton(QSharedPointer<QPushButton>(stopButton, [](QPushButton *ptr)
-    {
-        if (ptr && !ptr->parent())
+    QPointer<QPushButton> guardedStop(stopButton);
+    Globals::instance().setStopAudioButton(QSharedPointer<QPushButton>(stopButton, [guardedStop](QPushButton *ptr) {
+        if (guardedStop && ptr && !guardedStop->parent())
             ptr->deleteLater();
     }));
 
-    Globals::instance().setPauseAudioButton(QSharedPointer<QPushButton>(pauseButton, [](QPushButton *ptr)
-    {
-        if (ptr && !ptr->parent())
+    QPointer<QPushButton> guardedPause(pauseButton);
+    Globals::instance().setPauseAudioButton(QSharedPointer<QPushButton>(pauseButton, [guardedPause](QPushButton *ptr) {
+        if (guardedPause && ptr && !guardedPause->parent())
             ptr->deleteLater();
     }));
 
-    Globals::instance().setMuteAudioButton(QSharedPointer<QPushButton>(audioCButton, [](QPushButton *ptr)
-    {
-        if (ptr && !ptr->parent())
+    QPointer<QPushButton> guardedMute(audioCButton);
+    Globals::instance().setMuteAudioButton(QSharedPointer<QPushButton>(audioCButton, [guardedMute](QPushButton *ptr) {
+        if (guardedMute && ptr && !guardedMute->parent())
             ptr->deleteLater();
     }));
 
@@ -305,6 +314,20 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent) {
 
 MainWindow::~MainWindow() {
     threadManager->stopAllThreads(3000);
+
+    Globals::instance().setChatD(nullptr);
+    Globals::instance().setStateL(nullptr);
+    Globals::instance().setMessageInput(nullptr);
+    Globals::instance().setSendButton(nullptr);
+    Globals::instance().setConnectButton(nullptr);
+    Globals::instance().setPlaybackButton(nullptr);
+    Globals::instance().setCentralWidget(nullptr);
+    Globals::instance().setPropertiesTree(nullptr);
+    Globals::instance().setStopAudioButton(nullptr);
+    Globals::instance().setPauseAudioButton(nullptr);
+    Globals::instance().setMuteAudioButton(nullptr);
+    Globals::instance().setLogsD(nullptr);
+    Globals::instance().setLogsW(nullptr);
 }
 
 void MainWindow::sendMessage() {
@@ -318,8 +341,7 @@ void MainWindow::sendMessage() {
         AppendChatBox("<b>You:</b> %s", output);
         messageInput->clear();
 
-        Logs LogI;
-        LogI.Log(LogLevel::DEBUG, "New Message is sent...");
+        _logs->Log(LogLevel::INFO, "Chat Input: %s", output.toUtf8().constData());
 
         if (_msg[0] == '/')
             sendServerCommand(_msg);
@@ -336,15 +358,20 @@ void MainWindow::showLogsWindow()
     if (!logsWindow)
         logsWindow = new LogsWindow(this);
 
-    QDockWidget *dock = new QDockWidget("Logs", this);
-    dock->setWidget(logsWindow);
-    dock->setFeatures(QDockWidget::DockWidgetClosable | QDockWidget::DockWidgetMovable | QDockWidget::DockWidgetFloatable);
-    dock->setFloating(true);
-    dock->setAllowedAreas(Qt::NoDockWidgetArea);
-    dock->resize(logsWindow->sizeHint());
+    if (!logsDock)
+    {
+        logsDock = new QDockWidget("Logs", this);
+        logsDock->setWidget(logsWindow);
+        logsDock->setFeatures(QDockWidget::DockWidgetClosable | QDockWidget::DockWidgetMovable | QDockWidget::DockWidgetFloatable);
+        logsDock->setFloating(true);
+        logsDock->setAllowedAreas(Qt::NoDockWidgetArea);
+        logsDock->resize(logsWindow->sizeHint());
+        centerOverParent(logsDock, this);
+    }
 
-    centerOverParent(dock, this);
-    dock->show();
+    logsDock->show();
+    logsDock->raise();
+    logsDock->activateWindow();
 }
 
 void MainWindow::showSettingsWindow()
@@ -352,15 +379,20 @@ void MainWindow::showSettingsWindow()
     if (!settingsWindow)
         settingsWindow = new SettingsWindow(this);
 
-    QDockWidget *dock = new QDockWidget("Settings", this);
-    dock->setWidget(settingsWindow);
-    dock->setFeatures(QDockWidget::DockWidgetClosable | QDockWidget::DockWidgetMovable | QDockWidget::DockWidgetFloatable);
-    dock->setFloating(true);
-    dock->setAllowedAreas(Qt::NoDockWidgetArea);
-    dock->resize(settingsWindow->sizeHint());
+    if (!settingsDock)
+    {
+        settingsDock = new QDockWidget("Settings", this);
+        settingsDock->setWidget(settingsWindow);
+        settingsDock->setFeatures(QDockWidget::DockWidgetClosable | QDockWidget::DockWidgetMovable | QDockWidget::DockWidgetFloatable);
+        settingsDock->setFloating(true);
+        settingsDock->setAllowedAreas(Qt::NoDockWidgetArea);
+        settingsDock->resize(settingsWindow->sizeHint());
+        centerOverParent(settingsDock, this);
+    }
 
-    centerOverParent(dock, this);
-    dock->show();
+    settingsDock->show();
+    settingsDock->raise();
+    settingsDock->activateWindow();
 }
 
 void MainWindow::showConnectWindow()
@@ -371,6 +403,7 @@ void MainWindow::showConnectWindow()
     {
         AppendChatBox("Disconnection Requested.");
         AppendLogF("Disconnection Requested.");
+        _logs->Log(LogLevel::INFO, "[MAIN] Disconnection Requested by user.");
         std::this_thread::sleep_for(std::chrono::milliseconds(500));
         SetGameState(GAMESTATE_DISCONNECTION_REQUESTED);
     }
@@ -379,15 +412,22 @@ void MainWindow::showConnectWindow()
         if (!connectWindow)
             connectWindow = new ConnectWindow(this);
 
-        QDockWidget *dock = new QDockWidget("Connect", this);
-        dock->setWidget(connectWindow);
-        dock->setFeatures(QDockWidget::DockWidgetClosable | QDockWidget::DockWidgetMovable | QDockWidget::DockWidgetFloatable);
-        dock->setFloating(true);
-        dock->setAllowedAreas(Qt::NoDockWidgetArea);
-        dock->resize(connectWindow->sizeHint());
+        connectWindow->updateServerInfo();
 
-        centerOverParent(dock, this);
-        dock->show();
+        if (!connectDock)
+        {
+            connectDock = new QDockWidget("Connect", this);
+            connectDock->setWidget(connectWindow);
+            connectDock->setFeatures(QDockWidget::DockWidgetClosable | QDockWidget::DockWidgetMovable | QDockWidget::DockWidgetFloatable);
+            connectDock->setFloating(true);
+            connectDock->setAllowedAreas(Qt::NoDockWidgetArea);
+            connectDock->resize(connectWindow->sizeHint());
+            centerOverParent(connectDock, this);
+        }
+
+        connectDock->show();
+        connectDock->raise();
+        connectDock->activateWindow();
     }
 }
 
@@ -396,15 +436,20 @@ void MainWindow::showScoreBoardWindow()
     if (!scoreboardWindow)
         scoreboardWindow = new Scoreboard(this);
 
-    QDockWidget *dock = new QDockWidget("Scoreboard", this);
-    dock->setWidget(scoreboardWindow);
-    dock->setFeatures(QDockWidget::DockWidgetClosable | QDockWidget::DockWidgetMovable | QDockWidget::DockWidgetFloatable);
-    dock->setFloating(true);
-    dock->setAllowedAreas(Qt::NoDockWidgetArea);
-    dock->resize(scoreboardWindow->sizeHint());
+    if (!scoreboardDock)
+    {
+        scoreboardDock = new QDockWidget("Scoreboard", this);
+        scoreboardDock->setWidget(scoreboardWindow);
+        scoreboardDock->setFeatures(QDockWidget::DockWidgetClosable | QDockWidget::DockWidgetMovable | QDockWidget::DockWidgetFloatable);
+        scoreboardDock->setFloating(true);
+        scoreboardDock->setAllowedAreas(Qt::NoDockWidgetArea);
+        scoreboardDock->resize(scoreboardWindow->sizeHint());
+        centerOverParent(scoreboardDock, this);
+    }
 
-    centerOverParent(dock, this);
-    dock->show();
+    scoreboardDock->show();
+    scoreboardDock->raise();
+    scoreboardDock->activateWindow();
 }
 
 void MainWindow::showPlaybackWindow()
@@ -412,15 +457,20 @@ void MainWindow::showPlaybackWindow()
     if (!playbackWindow)
         playbackWindow = new PlaybackWindow(this);
 
-    QDockWidget *dock = new QDockWidget("Playback", this);
-    dock->setWidget(playbackWindow);
-    dock->setFeatures(QDockWidget::DockWidgetClosable | QDockWidget::DockWidgetMovable | QDockWidget::DockWidgetFloatable);
-    dock->setFloating(true);
-    dock->setAllowedAreas(Qt::NoDockWidgetArea);
-    dock->resize(playbackWindow->sizeHint());
+    if (!playbackDock)
+    {
+        playbackDock = new QDockWidget("Playback", this);
+        playbackDock->setWidget(playbackWindow);
+        playbackDock->setFeatures(QDockWidget::DockWidgetClosable | QDockWidget::DockWidgetMovable | QDockWidget::DockWidgetFloatable);
+        playbackDock->setFloating(true);
+        playbackDock->setAllowedAreas(Qt::NoDockWidgetArea);
+        playbackDock->resize(playbackWindow->sizeHint());
+        centerOverParent(playbackDock, this);
+    }
 
-    centerOverParent(dock, this);
-    dock->show();
+    playbackDock->show();
+    playbackDock->raise();
+    playbackDock->activateWindow();
 }
 
 void MainWindow::showServerLWindow()
@@ -428,15 +478,20 @@ void MainWindow::showServerLWindow()
     if (!serverlstWindow)
         serverlstWindow = new ServersList(this);
 
-    QDockWidget *dock = new QDockWidget("Servers List", this);
-    dock->setWidget(serverlstWindow);
-    dock->setFeatures(QDockWidget::DockWidgetClosable | QDockWidget::DockWidgetMovable | QDockWidget::DockWidgetFloatable);
-    dock->setFloating(true);
-    dock->setAllowedAreas(Qt::NoDockWidgetArea);
-    dock->resize(serverlstWindow->sizeHint());
+    if (!serverlstDock)
+    {
+        serverlstDock = new QDockWidget("Servers List", this);
+        serverlstDock->setWidget(serverlstWindow);
+        serverlstDock->setFeatures(QDockWidget::DockWidgetClosable | QDockWidget::DockWidgetMovable | QDockWidget::DockWidgetFloatable);
+        serverlstDock->setFloating(true);
+        serverlstDock->setAllowedAreas(Qt::NoDockWidgetArea);
+        serverlstDock->resize(serverlstWindow->sizeHint());
+        centerOverParent(serverlstDock, this);
+    }
 
-    centerOverParent(dock, this);
-    dock->show();
+    serverlstDock->show();
+    serverlstDock->raise();
+    serverlstDock->activateWindow();
 }
 
 void MainWindow::onAudioPauseClicked()

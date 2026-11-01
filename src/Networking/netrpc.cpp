@@ -1,4 +1,7 @@
 #include "../../include/Networking/netrpc.h"
+#include "../../include/mainwindow.h"
+#include <array>
+#include <QtCore/QPointer>
 
 int iNetModeNormalOnfootSendRate, iNetModeNormalIncarSendRate, iNetModeFiringSendRate, iNetModeSendMultiplier;
 
@@ -54,6 +57,22 @@ void ServerJoin(RPCParameters *rpcParams)
 	playerPool[playerId].BYTEIsNPC = bIsNPC;
 	strcpy((char *)playerPool[playerId].szPlayerName, szPlayerName);
 
+	QString qPlayerName = QString::fromUtf8(szPlayerName);
+	QMetaObject::invokeMethod(getMainWindow(), [playerId, qPlayerName]()
+	{
+		MainWindow* mw = qobject_cast<MainWindow*>(getMainWindow());
+		if (mw && mw->getScoreboardWindow())
+		{
+			Scoreboard::PlayerDTA dta;
+			dta.id = playerId;
+			dta.name = qPlayerName;
+			dta.score = 0;
+			dta.ping = 0;
+			mw->getScoreboardWindow()->handlePlayer(dta);
+		}
+	}, Qt::QueuedConnection);
+
+	AppendChatBox("*** [JOIN] (%d) %s", playerId, szPlayerName);
 	if (LogSettings.RPC)
 	{
 		AppendLogF("***[JOIN] (%d) %s", playerId, szPlayerName);
@@ -87,6 +106,15 @@ void ServerQuit(RPCParameters *rpcParams)
 		_logs->Log(LogLevel::DEBUG, "***[QUIT:%d] (%d) %s", uint8_tReason, playerId, playerPool[playerId].szPlayerName);
 	}
 	memset(playerPool[playerId].szPlayerName, 0, 20);
+
+	QMetaObject::invokeMethod(getMainWindow(), [playerId]()
+	{
+		MainWindow* mw = qobject_cast<MainWindow*>(getMainWindow());
+		if (mw && mw->getScoreboardWindow())
+		{
+			mw->getScoreboardWindow()->removePlayer(playerId);
+		}
+	}, Qt::QueuedConnection);
 }
 
 void InitGame(RPCParameters *rpcParams)
@@ -422,13 +450,14 @@ void ConnectionRejected(RPCParameters *rpcParams)
 		iGettingNewName = true;
 
 		gen_random(randgen, sizeof(randgen));
-		sprintf(szNewNick, "TMP_%s", randgen);
+		snprintf(szNewNick, sizeof(szNewNick), "TMP_%s", randgen);
 
-		AppendChatBox("[SAMP] Bad nickname. Changing name to %s");
-		_logs->Log(LogLevel::ERROR, "[SAMP] Bad nickname. Changing name to %s");
+		AppendChatBox("[SAMP] Bad nickname. Changing name to %s", szNewNick);
+		_logs->Log(LogLevel::ERROR, "[SAMP] Bad nickname. Changing name to %s", szNewNick);
 		emit worker.MessageBox(QString::fromUtf8("Error"), QString::fromUtf8("[SAMP] The connection was Rejected: Bad nickname.\nPlease choose another nick between 3-16 characters\ncontaining only A-Z a-z 0-9 [ ] or _\nChanging name..."), QMessageBox::Ok, QMessageBox::Warning);
 
-		strcpy(playerPool[g_myPlayerID].szPlayerName, szNewNick);
+		strncpy(playerPool[g_myPlayerID].szPlayerName, szNewNick, sizeof(playerPool[g_myPlayerID].szPlayerName) - 1);
+		playerPool[g_myPlayerID].szPlayerName[sizeof(playerPool[g_myPlayerID].szPlayerName) - 1] = '\0';
 		resetPools();
 		std::this_thread::sleep_for(std::chrono::milliseconds(500));
 		SetGameState(GAMESTATE_WAIT_CONNECT);
@@ -467,7 +496,11 @@ void __ClientMessage(RPCParameters *rpcParams)
 
 	bsData.Read(dwColor);
 	bsData.Read(dwStrLen);
+	if (dwStrLen > 2048)
+		dwStrLen = 2048;
 	char *szMsg = (char *)malloc(dwStrLen + 1);
+	if (!szMsg)
+		return;
 	bsData.Read(szMsg, dwStrLen);
 	szMsg[dwStrLen] = 0;
 
@@ -476,7 +509,8 @@ void __ClientMessage(RPCParameters *rpcParams)
 	uint8_t blue = (dwColor >> 8) & 0xFF;
 	QString HexColor = QString("#%1%2%3").arg(red, 2, 16, QChar('0')).arg(green, 2, 16, QChar('0')).arg(blue, 2, 16, QChar('0')).toUpper();
 
-	AppendChatBox("[CMSG] <span color=\"%s\">%s</span>", HexColor.toUtf8().data(), formatColorMessage(removeMarkupTags(szMsg)));
+	AppendChatBox("[CMSG] <span style=\"color: %s\">%s</span>", HexColor.toUtf8().data(), formatColorMessage(removeMarkupTags(szMsg)));
+	_logs->Log(LogLevel::INFO, "[SERVER] %s", removeMarkupTags(szMsg));
 
 	free(szMsg);
 }
@@ -506,6 +540,7 @@ void Chat(RPCParameters *rpcParams)
 
 	char *_text = removeMarkupTags((char *)szText);
 	AppendChatBox("[CHAT] <span style=\"color: %s\">%s</span>: %s", QString(playerPool[playerId].HEXcolor).toUtf8().data(), playerPool[playerId].szPlayerName, formatColorMessage((const char *)_text));
+	_logs->Log(LogLevel::INFO, "[CHAT] (%d) %s: %s", playerId, playerPool[playerId].szPlayerName, _text);
 }
 
 void UpdateScoresPingsIPs(RPCParameters *rpcParams)
@@ -522,6 +557,9 @@ void UpdateScoresPingsIPs(RPCParameters *rpcParams)
 	int iPlayerScore;
 	uint32_t dwPlayerPing;
 
+	std::vector<Scoreboard::PlayerDTA> updates;
+	updates.reserve((iBitLength / 8) / 9);
+
 	for (PLAYERID i = 0; i < (iBitLength / 8) / 9; i++)
 	{
 		bsData.Read(playerId);
@@ -533,6 +571,29 @@ void UpdateScoresPingsIPs(RPCParameters *rpcParams)
 
 		playerPool[playerId].iScore = iPlayerScore;
 		playerPool[playerId].dwPing = dwPlayerPing;
+
+		if (playerPool[playerId].bIsConnected)
+		{
+			Scoreboard::PlayerDTA dta;
+			dta.id = playerId;
+			dta.name = QString::fromUtf8((const char *)playerPool[playerId].szPlayerName);
+			dta.score = iPlayerScore;
+			dta.ping = dwPlayerPing;
+			updates.push_back(dta);
+		}
+	}
+
+	if (!updates.empty())
+	{
+		QMetaObject::invokeMethod(getMainWindow(), [updates]()
+		{
+			MainWindow* mw = qobject_cast<MainWindow*>(getMainWindow());
+			if (mw && mw->getScoreboardWindow())
+			{
+				for (const auto& dta : updates)
+					mw->getScoreboardWindow()->handlePlayer(dta);
+			}
+		}, Qt::QueuedConnection);
 	}
 }
 
@@ -779,8 +840,6 @@ void ScrInitMenu(RPCParameters *rpcParams)
 
 	uint8_t BYTEMenuID;
 	bool HasTwoColumns;
-	char cText[MAX_MENU_LINE];
-	char *mTitle;
 	float fX;
 	float fY;
 	float fCol1W;
@@ -789,12 +848,15 @@ void ScrInitMenu(RPCParameters *rpcParams)
 	bsData.Read(BYTEMenuID);
 	if (LogSettings.RPC)
 	{
-		AppendLogF("Processing Menu ID %s", BYTEMenuID);
-		_logs->Log(LogLevel::DEBUG, "Processing Menu ID %s", BYTEMenuID);
+		AppendLogF("Processing Menu ID %d", BYTEMenuID);
+		_logs->Log(LogLevel::DEBUG, "Processing Menu ID %d", BYTEMenuID);
 	}
 	bsData.Read(HasTwoColumns);
 	bsData.Read(GTAMenu.szTitleL);
+	if (GTAMenu.szTitleL >= MAX_MENU_LINE)
+		GTAMenu.szTitleL = MAX_MENU_LINE - 1;
 	bsData.Read(GTAMenu.szTitle, GTAMenu.szTitleL);
+	GTAMenu.szTitle[GTAMenu.szTitleL] = '\0';
 	bsData.Read(fX);
 	bsData.Read(fY);
 	bsData.Read(fCol1W);
@@ -805,60 +867,97 @@ void ScrInitMenu(RPCParameters *rpcParams)
 		bsData.Read(GTAMenu.bRowState[0][idx]);
 
 	bsData.Read(GTAMenu.szColumnHeader[0], MAX_MENU_LINE);
+	GTAMenu.szColumnHeader[0][MAX_MENU_LINE - 1] = '\0';
 	bsData.Read(GTAMenu.szColumnCount[0]);
-	char *__RowL;
+	if (GTAMenu.szColumnCount[0] > MAX_MENU_ITEMS)
+		GTAMenu.szColumnCount[0] = MAX_MENU_ITEMS;
 	for (uint8_t idx = 0; idx < GTAMenu.szColumnCount[0]; idx++)
 	{
-		strcpy(__RowL, GTAMenu.szRowLine[0][idx]);
-		bsData.Read(__RowL, MAX_MENU_LINE);
+		bsData.Read(GTAMenu.szRowLine[0][idx], MAX_MENU_LINE);
+		GTAMenu.szRowLine[0][idx][MAX_MENU_LINE - 1] = '\0';
 	}
 
 	if (HasTwoColumns)
 	{
 		bsData.Read(GTAMenu.szColumnHeader[1], MAX_MENU_LINE);
+		GTAMenu.szColumnHeader[1][MAX_MENU_LINE - 1] = '\0';
 		bsData.Read(GTAMenu.szColumnCount[1]);
+		if (GTAMenu.szColumnCount[1] > MAX_MENU_ITEMS)
+			GTAMenu.szColumnCount[1] = MAX_MENU_ITEMS;
 		for (uint8_t idx = 0; idx < GTAMenu.szColumnCount[1]; idx++)
 		{
-			strcpy(__RowL, GTAMenu.szRowLine[1][idx]);
-			bsData.Read(__RowL, MAX_MENU_LINE);
+			bsData.Read(GTAMenu.szRowLine[1][idx], MAX_MENU_LINE);
+			GTAMenu.szRowLine[1][idx][MAX_MENU_LINE - 1] = '\0';
+			GTAMenu.bRowState[1][idx] = true;
 		}
 	}
 
-	if (!SAMPMenu::instance().isMenuVisible())
+	QString menuTitle = QString::fromUtf8(GTAMenu.szTitle);
+	QString col1Header = QString::fromUtf8(GTAMenu.szColumnHeader[0]);
+	QString col2Header = HasTwoColumns ? QString::fromUtf8(GTAMenu.szColumnHeader[1]) : QString();
+	int colCount = HasTwoColumns ? 2 : 1;
+	char *Col1RowPointers[MAX_MENU_ITEMS];
+	char *Col2RowPointers[MAX_MENU_ITEMS];
+	for (int i = 0; i < MAX_MENU_ITEMS; i++)
 	{
-		char *Col1RowPointers[MAX_MENU_ITEMS];
-		for (int i = 0; i < MAX_MENU_ITEMS; i++)
-			Col1RowPointers[i] = GTAMenu.szRowLine[0][i];
-		char *Col2RowPointers[MAX_MENU_ITEMS];
-		for (int i = 0; i < MAX_MENU_ITEMS; i++)
-			Col2RowPointers[i] = GTAMenu.szRowLine[1][i];
-		SAMPMenu menuBox(GTAMenu.szTitle, (HasTwoColumns ? 2 : 1), Char2DArrayToQStringList(Col1RowPointers, 1), GTAMenu.bRowState[0], GTAMenu.szColumnHeader[0], (HasTwoColumns ? Char2DArrayToQStringList(Col2RowPointers, 2) : QStringList()), GTAMenu.bRowState[1], GTAMenu.szColumnHeader[1], getMainWidget());
-		QObject::connect(&menuBox, &SAMPMenu::menuResponse, [&](int rowID, bool response)
-						 {
+		Col1RowPointers[i] = GTAMenu.szRowLine[0][i];
+		Col2RowPointers[i] = GTAMenu.szRowLine[1][i];
+	}
+	QStringList col1Items = Char2DArrayToQStringList(Col1RowPointers, GTAMenu.szColumnCount[0]);
+	QStringList col2Items = HasTwoColumns ? Char2DArrayToQStringList(Col2RowPointers, GTAMenu.szColumnCount[1]) : QStringList();
+	std::array<bool, MAX_MENU_ITEMS> col1State{};
+	std::array<bool, MAX_MENU_ITEMS> col2State{};
+	for (int i = 0; i < MAX_MENU_ITEMS; ++i)
+	{
+		col1State[i] = GTAMenu.bRowState[0][i];
+		col2State[i] = GTAMenu.bRowState[1][i];
+	}
+
+	QMetaObject::invokeMethod(getMainWidget(), [menuTitle, colCount, col1Items, col1State, col1Header, col2Items, col2State, col2Header]()
+	{
+		SAMPMenu::closeActiveMenu();
+
+		bool col1StatesArr[MAX_MENU_ITEMS];
+		bool col2StatesArr[MAX_MENU_ITEMS];
+		for (int i = 0; i < MAX_MENU_ITEMS; ++i)
+		{
+			col1StatesArr[i] = col1State[i];
+			col2StatesArr[i] = col2State[i];
+		}
+
+		auto *menuBox = new SAMPMenu(menuTitle, colCount, col1Items, col1StatesArr, col1Header,
+			col2Items, col2StatesArr, col2Header, getMainWidget());
+		SAMPMenu::activeMenu = menuBox;
+		menuBox->setAttribute(Qt::WA_DeleteOnClose);
+		QObject::connect(menuBox, &SAMPMenu::menuResponse, menuBox, [](int rowID, bool response)
+		{
+			if (LogSettings.RPC)
+			{
+				_logs->Log(LogLevel::INFO, "[MENU] Menu response: Row=%d, Response=%s", rowID, response ? "Selected" : "Quit");
+			}
 			RakNet::BitStream RbsSend;
-			if(response) {
-				RbsSend.Write(rowID);
-				if(!pRakClient->RPC(&RPC_MenuSelect, &RbsSend, HIGH_PRIORITY, RELIABLE_ORDERED, 0, false, UNASSIGNED_NETWORK_ID, NULL))
+			if (response)
+			{
+				RbsSend.Write((uint8_t)rowID);
+				if (!pRakClient->RPC(&RPC_MenuSelect, &RbsSend, HIGH_PRIORITY, RELIABLE_ORDERED, 0, false, UNASSIGNED_NETWORK_ID, NULL) && LogSettings.RPC)
 				{
-					if (LogSettings.RPC )
-					{
-						AppendLogF("ScrInitMenu -> Something went wrong!");
-						_logs->Log(LogLevel::ERROR, "ScrInitMenu -> Something went wrong!");
-					}
+					AppendLogF("ScrInitMenu -> Something went wrong!");
+					_logs->Log(LogLevel::ERROR, "ScrInitMenu -> Something went wrong!");
 				}
 			}
-			else {
-				if (!pRakClient->RPC(&RPC_MenuQuit, &RbsSend, HIGH_PRIORITY, RELIABLE_ORDERED, 0, false, UNASSIGNED_NETWORK_ID, NULL))
+			else
+			{
+				if (!pRakClient->RPC(&RPC_MenuQuit, &RbsSend, HIGH_PRIORITY, RELIABLE_ORDERED, 0, false, UNASSIGNED_NETWORK_ID, NULL) && LogSettings.RPC)
 				{
-					if (LogSettings.RPC )
-					{
-						AppendLogF("ScrInitMenu -> Something went wrong!");
-						_logs->Log(LogLevel::ERROR, "ScrInitMenu -> Something went wrong!");
-					}
+					AppendLogF("ScrInitMenu -> Something went wrong!");
+					_logs->Log(LogLevel::ERROR, "ScrInitMenu -> Something went wrong!");
 				}
-			} });
-		menuBox.show();
-	}
+			}
+		});
+		menuBox->show();
+		menuBox->raise();
+		menuBox->activateWindow();
+	}, Qt::QueuedConnection);
 }
 
 void ScrDialogBox(RPCParameters *rpcParams)
@@ -885,162 +984,143 @@ void ScrDialogBox(RPCParameters *rpcParams)
 	bsData.Read(sampDialog.szButton2, sampDialog.bButton2Len);
 	sampDialog.szButton2[sampDialog.bButton2Len] = 0;
 
-	stringCompressor->DecodeString(sampDialog.szInfo, 256, &bsData);
+	stringCompressor->DecodeString(sampDialog.szInfo, sizeof(sampDialog.szInfo), &bsData);
 
-	RakNet::BitStream RbsSend;
-	switch (sampDialog.bDialogStyle)
+	if (LogSettings.RPC)
 	{
-	case DIALOG_STYLE_MSGBOX:
+		_logs->Log(LogLevel::INFO, "[DIALOG] Received Dialog ID %d (Style: %d, Title: '%s', Buttons: '%s' / '%s')",
+			sampDialog.wDialogID, sampDialog.bDialogStyle, sampDialog.szTitle, sampDialog.szButton1, sampDialog.szButton2);
+	}
+
+	QMetaObject::invokeMethod(getMainWidget(), [
+		dialogID = sampDialog.wDialogID,
+		bDialogStyle = sampDialog.bDialogStyle,
+		title = QString::fromUtf8(sampDialog.szTitle),
+		info = QString::fromUtf8(sampDialog.szInfo),
+		btn1 = QString::fromUtf8(sampDialog.szButton1),
+		btn2 = QString::fromUtf8(sampDialog.szButton2)
+	]()
 	{
-		if (!SAMPDialog::instance().isDialogVisible())
+		SAMPDialog::closeActiveDialog();
+
+		auto sendResponse = [dialogID](int buttonId, int listBoxItem, const QString &text, bool response)
 		{
-			SAMPDialog msgBoxDialog(SAMPDialog::MSGBOX, QString::fromUtf8(sampDialog.szTitle), QString::fromUtf8(sampDialog.szInfo), QString::fromUtf8(sampDialog.szButton1), QString::fromUtf8(sampDialog.szButton2), getMainWidget());
-			QObject::connect(&msgBoxDialog, &SAMPDialog::dialogResponse, [&](int buttonId, int listBoxItem, const QString &text, bool response)
-							 {
-	                RbsSend.Write(sampDialog.wDialogID);
-	                RbsSend.Write(buttonId);
-	                RbsSend.Write(listBoxItem);
-	                RbsSend.Write(text.size());
-	                RbsSend.Write(text.toStdString().c_str(), text.size());
-	                if(!pRakClient->RPC(&RPC_DialogResponse, &RbsSend, HIGH_PRIORITY, RELIABLE_ORDERED, 0, false, UNASSIGNED_NETWORK_ID, NULL))
-					{
-						if (LogSettings.RPC )
-						{
-							AppendLogF("ScrDialogBox -> Something went wrong!");
-							_logs->Log(LogLevel::ERROR, "ScrDialogBox -> Something went wrong!");
-						}
-					} });
-			msgBoxDialog.exec();
-		}
-		break;
-	}
-	case DIALOG_STYLE_INPUT:
-	{
-		if (!SAMPDialog::instance().isDialogVisible())
+			Q_UNUSED(response);
+			if (LogSettings.RPC)
+			{
+				_logs->Log(LogLevel::INFO, "[DIALOG] Response sent: DialogID=%d, Button=%d, Item=%d, Text='%s'",
+					dialogID, buttonId, listBoxItem, text.toUtf8().constData());
+			}
+			QByteArray utf8 = text.toUtf8();
+			uint8_t len = static_cast<uint8_t>(std::min<int>(utf8.size(), 255));
+			uint16_t wListItem = (listBoxItem < 0) ? 0xFFFF : static_cast<uint16_t>(listBoxItem);
+
+			RakNet::BitStream RbsSend;
+			RbsSend.Write(static_cast<uint16_t>(dialogID));
+			RbsSend.Write(static_cast<uint8_t>(buttonId));
+			RbsSend.Write(wListItem);
+			RbsSend.Write(len);
+			if (len > 0)
+				RbsSend.Write(utf8.constData(), len);
+
+			if (!pRakClient->RPC(&RPC_DialogResponse, &RbsSend, HIGH_PRIORITY, RELIABLE_ORDERED, 0, false, UNASSIGNED_NETWORK_ID, NULL))
+			{
+				if (LogSettings.RPC)
+				{
+					AppendLogF("ScrDialogBox -> Something went wrong!");
+					_logs->Log(LogLevel::ERROR, "ScrDialogBox -> Something went wrong!");
+				}
+			}
+		};
+
+		switch (bDialogStyle)
 		{
-			SAMPDialog msgBoxDialog(SAMPDialog::INPUT, QString::fromUtf8(sampDialog.szTitle), QString::fromUtf8(sampDialog.szInfo), QString::fromUtf8(sampDialog.szButton1), QString::fromUtf8(sampDialog.szButton2), getMainWidget());
-			QObject::connect(&msgBoxDialog, &SAMPDialog::dialogResponse, [&](int buttonId, int listBoxItem, const QString &text, bool response)
-							 {
-	                RbsSend.Write(sampDialog.wDialogID);
-	                RbsSend.Write(buttonId);
-	                RbsSend.Write(listBoxItem);
-	                RbsSend.Write(text.size());
-	                RbsSend.Write(text.toStdString().c_str(), text.size());
-	                if(!pRakClient->RPC(&RPC_DialogResponse, &RbsSend, HIGH_PRIORITY, RELIABLE_ORDERED, 0, false, UNASSIGNED_NETWORK_ID, NULL))
-					{
-						if (LogSettings.RPC )
-						{
-							AppendLogF("ScrDialogBox -> Something went wrong!");
-							_logs->Log(LogLevel::ERROR, "ScrDialogBox -> Something went wrong!");
-						}
-					} });
-			msgBoxDialog.exec();
-		}
-		break;
-	}
-	case DIALOG_STYLE_LIST:
-	{
-		if (!SAMPDialog::instance().isDialogVisible())
+		case DIALOG_STYLE_MSGBOX:
 		{
-			SAMPDialog msgBoxDialog(SAMPDialog::LIST, QString::fromUtf8(sampDialog.szTitle), QString::fromUtf8(sampDialog.szInfo), QString::fromUtf8(sampDialog.szButton1), QString::fromUtf8(sampDialog.szButton2), getMainWidget());
-			QObject::connect(&msgBoxDialog, &SAMPDialog::dialogResponse, [&](int buttonId, int listBoxItem, const QString &text, bool response)
-							 {
-	                RbsSend.Write(sampDialog.wDialogID);
-	                RbsSend.Write(buttonId);
-	                RbsSend.Write(listBoxItem);
-	                RbsSend.Write(text.size());
-	                RbsSend.Write(text.toStdString().c_str(), text.size());
-	                if(!pRakClient->RPC(&RPC_DialogResponse, &RbsSend, HIGH_PRIORITY, RELIABLE_ORDERED, 0, false, UNASSIGNED_NETWORK_ID, NULL))
-					{
-						if (LogSettings.RPC )
-						{
-							AppendLogF("ScrDialogBox -> Something went wrong!");
-							_logs->Log(LogLevel::ERROR, "ScrDialogBox -> Something went wrong!");
-						}
-					} });
-			msgBoxDialog.exec();
+			if (SAMPDialog::instance().isDialogVisible())
+				break;
+			SAMPDialog *msgBoxDialog = new SAMPDialog(SAMPDialog::MSGBOX, title, info, btn1, btn2, getMainWidget());
+			msgBoxDialog->setAttribute(Qt::WA_DeleteOnClose);
+			SAMPDialog::activeDialog = msgBoxDialog;
+			QObject::connect(msgBoxDialog, &SAMPDialog::dialogResponse, sendResponse);
+			msgBoxDialog->show();
+			msgBoxDialog->raise();
+			msgBoxDialog->activateWindow();
+			break;
 		}
-		break;
-	}
-	case DIALOG_STYLE_PASSWORD:
-	{
-		if (!SAMPDialog::instance().isDialogVisible())
+		case DIALOG_STYLE_INPUT:
 		{
-			SAMPDialog msgBoxDialog(SAMPDialog::PASSWORD, QString::fromUtf8(sampDialog.szTitle), QString::fromUtf8(sampDialog.szInfo), QString::fromUtf8(sampDialog.szButton1), QString::fromUtf8(sampDialog.szButton2), getMainWidget());
-			QObject::connect(&msgBoxDialog, &SAMPDialog::dialogResponse, [&](int buttonId, int listBoxItem, const QString &text, bool response)
-							 {
-	                RbsSend.Write(sampDialog.wDialogID);
-	                RbsSend.Write(buttonId);
-	                RbsSend.Write(listBoxItem);
-	                RbsSend.Write(text.size());
-	                RbsSend.Write(text.toStdString().c_str(), text.size());
-	                if(!pRakClient->RPC(&RPC_DialogResponse, &RbsSend, HIGH_PRIORITY, RELIABLE_ORDERED, 0, false, UNASSIGNED_NETWORK_ID, NULL))
-					{
-						if (LogSettings.RPC )
-						{
-							AppendLogF("ScrDialogBox -> Something went wrong!");
-							_logs->Log(LogLevel::ERROR, "ScrDialogBox -> Something went wrong!");
-						}
-					} });
-			msgBoxDialog.exec();
+			if (SAMPDialog::instance().isDialogVisible())
+				break;
+			SAMPDialog *msgBoxDialog = new SAMPDialog(SAMPDialog::INPUT, title, info, btn1, btn2, getMainWidget());
+			msgBoxDialog->setAttribute(Qt::WA_DeleteOnClose);
+			SAMPDialog::activeDialog = msgBoxDialog;
+			QObject::connect(msgBoxDialog, &SAMPDialog::dialogResponse, sendResponse);
+			msgBoxDialog->show();
+			msgBoxDialog->raise();
+			msgBoxDialog->activateWindow();
+			break;
 		}
-		break;
-	}
-	case DIALOG_STYLE_TABLIST:
-	{
-		if (!SAMPDialog::instance().isDialogVisible())
+		case DIALOG_STYLE_LIST:
 		{
-			SAMPDialog msgBoxDialog(SAMPDialog::TABLIST, QString::fromUtf8(sampDialog.szTitle), QString::fromUtf8(sampDialog.szInfo), QString::fromUtf8(sampDialog.szButton1), QString::fromUtf8(sampDialog.szButton2), getMainWidget());
-			QObject::connect(&msgBoxDialog, &SAMPDialog::dialogResponse, [&](int buttonId, int listBoxItem, const QString &text, bool response)
-							 {
-	                RbsSend.Write(sampDialog.wDialogID);
-	                RbsSend.Write(buttonId);
-	                RbsSend.Write(listBoxItem);
-	                RbsSend.Write(text.size());
-	                RbsSend.Write(text.toStdString().c_str(), text.size());
-	                if(!pRakClient->RPC(&RPC_DialogResponse, &RbsSend, HIGH_PRIORITY, RELIABLE_ORDERED, 0, false, UNASSIGNED_NETWORK_ID, NULL))
-					{
-						if (LogSettings.RPC )
-						{
-							AppendLogF("ScrDialogBox -> Something went wrong!");
-							_logs->Log(LogLevel::ERROR, "ScrDialogBox -> Something went wrong!");
-						}
-					} });
-			msgBoxDialog.exec();
+			if (SAMPDialog::instance().isDialogVisible())
+				break;
+			SAMPDialog *msgBoxDialog = new SAMPDialog(SAMPDialog::LIST, title, info, btn1, btn2, getMainWidget());
+			msgBoxDialog->setAttribute(Qt::WA_DeleteOnClose);
+			SAMPDialog::activeDialog = msgBoxDialog;
+			QObject::connect(msgBoxDialog, &SAMPDialog::dialogResponse, sendResponse);
+			msgBoxDialog->show();
+			msgBoxDialog->raise();
+			msgBoxDialog->activateWindow();
+			break;
 		}
-		break;
-	}
-	case DIALOG_STYLE_TABLIST_HEADERS:
-	{
-		if (!SAMPDialog::instance().isDialogVisible())
+		case DIALOG_STYLE_PASSWORD:
 		{
-			SAMPDialog msgBoxDialog(SAMPDialog::HEADERLIST, QString::fromUtf8(sampDialog.szTitle), QString::fromUtf8(sampDialog.szInfo), QString::fromUtf8(sampDialog.szButton1), QString::fromUtf8(sampDialog.szButton2), getMainWidget());
-			QObject::connect(&msgBoxDialog, &SAMPDialog::dialogResponse, [&](int buttonId, int listBoxItem, const QString &text, bool response)
-							 {
-	                RbsSend.Write(sampDialog.wDialogID);
-	                RbsSend.Write(buttonId);
-	                RbsSend.Write(listBoxItem);
-	                RbsSend.Write(text.size());
-	                RbsSend.Write(text.toStdString().c_str(), text.size());
-	                if(!pRakClient->RPC(&RPC_DialogResponse, &RbsSend, HIGH_PRIORITY, RELIABLE_ORDERED, 0, false, UNASSIGNED_NETWORK_ID, NULL))
-					{
-						if (LogSettings.RPC )
-						{
-							AppendLogF("ScrDialogBox -> Something went wrong!");
-							_logs->Log(LogLevel::ERROR, "ScrDialogBox -> Something went wrong!");
-						}
-					} });
-			msgBoxDialog.exec();
+			if (SAMPDialog::instance().isDialogVisible())
+				break;
+			SAMPDialog *msgBoxDialog = new SAMPDialog(SAMPDialog::PASSWORD, title, info, btn1, btn2, getMainWidget());
+			msgBoxDialog->setAttribute(Qt::WA_DeleteOnClose);
+			SAMPDialog::activeDialog = msgBoxDialog;
+			QObject::connect(msgBoxDialog, &SAMPDialog::dialogResponse, sendResponse);
+			msgBoxDialog->show();
+			msgBoxDialog->raise();
+			msgBoxDialog->activateWindow();
+			break;
 		}
-		break;
-	}
-	default:
-	{
-		if (SAMPDialog::instance().isDialogVisible())
-			SAMPDialog::instance().closeDialog();
-		break;
-	}
-	}
+		case DIALOG_STYLE_TABLIST:
+		{
+			if (SAMPDialog::instance().isDialogVisible())
+				break;
+			SAMPDialog *msgBoxDialog = new SAMPDialog(SAMPDialog::TABLIST, title, info, btn1, btn2, getMainWidget());
+			msgBoxDialog->setAttribute(Qt::WA_DeleteOnClose);
+			SAMPDialog::activeDialog = msgBoxDialog;
+			QObject::connect(msgBoxDialog, &SAMPDialog::dialogResponse, sendResponse);
+			msgBoxDialog->show();
+			msgBoxDialog->raise();
+			msgBoxDialog->activateWindow();
+			break;
+		}
+		case DIALOG_STYLE_TABLIST_HEADERS:
+		{
+			if (SAMPDialog::instance().isDialogVisible())
+				break;
+			SAMPDialog *msgBoxDialog = new SAMPDialog(SAMPDialog::HEADERLIST, title, info, btn1, btn2, getMainWidget());
+			msgBoxDialog->setAttribute(Qt::WA_DeleteOnClose);
+			SAMPDialog::activeDialog = msgBoxDialog;
+			QObject::connect(msgBoxDialog, &SAMPDialog::dialogResponse, sendResponse);
+			msgBoxDialog->show();
+			msgBoxDialog->raise();
+			msgBoxDialog->activateWindow();
+			break;
+		}
+		default:
+		{
+			if (SAMPDialog::instance().isDialogVisible())
+				SAMPDialog::instance().closeDialog();
+			break;
+		}
+		}
+	}, Qt::QueuedConnection);
 }
 
 void ScrSetPlayerColor(RPCParameters *rpcParams)
@@ -1226,6 +1306,8 @@ void ScrPlayAudioStream(RPCParameters *rpcParams)
 	char szURL[256];
 
 	bsData.Read(bURLLen);
+	if (bURLLen >= sizeof(szURL))
+		bURLLen = sizeof(szURL) - 1;
 	bsData.Read(szURL, bURLLen);
 	szURL[bURLLen] = 0;
 
@@ -1235,20 +1317,24 @@ void ScrPlayAudioStream(RPCParameters *rpcParams)
 		_logs->Log(LogLevel::DEBUG, "[AUDIO_STREAM] %s", szURL);
 	}
 
-	AudioStream audioStream;
-	audioStream.PlayAudioStream(szURL, 0.5);
+	QString qUrl = QString::fromUtf8(szURL);
+	QMetaObject::invokeMethod(getMainWidget(), [qUrl]() {
+		AudioStream::instance().PlayAudioStream(qUrl, 0.5);
+	}, Qt::QueuedConnection);
 }
 
 void ScrStopAudioStream(RPCParameters *rpcParams)
 {
+	Q_UNUSED(rpcParams);
 	if (LogSettings.RPC)
 	{
 		AppendLogF("[AUDIO_STREAM] Stopping...");
 		_logs->Log(LogLevel::DEBUG, "[AUDIO_STREAM] Stopping...");
 	}
 
-	AudioStream audioStream;
-	audioStream.StopAudioStream();
+	QMetaObject::invokeMethod(getMainWidget(), []() {
+		AudioStream::instance().StopAudioStream();
+	}, Qt::QueuedConnection);
 }
 
 void ScrSetDrunkLevel(RPCParameters *rpcParams)
@@ -1486,6 +1572,8 @@ void ScrShowTextDraw(RPCParameters *rpcParams)
 	bsData.Read(wTextID);
 	bsData.Read((char *)&TextDrawTransmit, sizeof(TEXT_DRAW_TRANSMIT));
 	bsData.Read(cTextLen);
+	if (cTextLen >= sizeof(cText))
+		cTextLen = sizeof(cText) - 1;
 	bsData.Read(cText, cTextLen);
 	cText[cTextLen] = '\0';
 
@@ -1535,6 +1623,8 @@ void ScrEditTextDraw(RPCParameters *rpcParams)
 
 	bsData.Read(wTextID);
 	bsData.Read(cTextLen);
+	if (cTextLen >= sizeof(cText))
+		cTextLen = sizeof(cText) - 1;
 	bsData.Read(cText, cTextLen);
 	cText[cTextLen] = '\0';
 
@@ -1648,7 +1738,12 @@ void ScrSetWeaponAmmo(RPCParameters *rpcParams)
 	bsData.Read(byteWeapon);
 	bsData.Read(weapAmmo);
 
-	playerPool[g_myPlayerID].weaponData[weaponSlots[byteWeapon]].weaponAmmo = weapAmmo;
+	if (byteWeapon >= 47)
+		return;
+	int8_t slotID = weaponSlots[byteWeapon];
+	if (slotID < 0 || slotID >= MAX_WEAPON_SLOTS)
+		return;
+	playerPool[g_myPlayerID].weaponData[slotID].weaponAmmo = weapAmmo;
 }
 
 void ScrDeathMessage(RPCParameters *rpcParams)
@@ -1656,48 +1751,41 @@ void ScrDeathMessage(RPCParameters *rpcParams)
 	char *Data = reinterpret_cast<char *>(rpcParams->input);
 	int iBitLength = rpcParams->numberOfBitsOfData;
 
-	uint8_t byteKiller, byteKillee, byteWeapon;
+	PLAYERID killerId, killeeId;
+	uint8_t byteWeapon;
 	RakNet::BitStream bsData((unsigned char *)Data, (iBitLength / 8) + 1, false);
-	char *szKillerName = NULL;
-	char *szKilleeName = NULL;
 
-	bsData.Read(byteKiller);
-	bsData.Read(byteKillee);
+	bsData.Read(killerId);
+	bsData.Read(killeeId);
 	bsData.Read(byteWeapon);
 
-	if (byteKillee == INVALID_PLAYER_ID)
+	if (killeeId == INVALID_PLAYER_ID || killeeId >= MAX_PLAYERS)
 		return;
 
-	if (byteKiller == INVALID_PLAYER_ID)
-		szKillerName = NULL;
-	else
+	const char *szKillerName = NULL;
+	const char *szKilleeName = NULL;
+
+	if (killerId != INVALID_PLAYER_ID && killerId < MAX_PLAYERS)
 	{
-		if (g_myPlayerID == byteKiller)
+		if (g_myPlayerID == killerId)
 			szKillerName = playerPool[g_myPlayerID].szPlayerName;
-		else
-		{
-			if (playerPool[byteKiller].bIsConnected == true)
-				szKillerName = playerPool[byteKiller].szPlayerName;
-			else
-				szKillerName = NULL;
-		}
+		else if (playerPool[killerId].bIsConnected)
+			szKillerName = playerPool[killerId].szPlayerName;
 	}
 
-	if (g_myPlayerID == byteKillee)
+	if (g_myPlayerID == killeeId)
 		szKilleeName = playerPool[g_myPlayerID].szPlayerName;
-	else
-	{
-		if (playerPool[byteKillee].bIsConnected == true)
-			szKilleeName = playerPool[byteKillee].szPlayerName;
-		else
-			szKilleeName = NULL;
-	}
+	else if (playerPool[killeeId].bIsConnected)
+		szKilleeName = playerPool[killeeId].szPlayerName;
 
-	AppendChatBox("[DeathMessage] killer=%s killee=%s weapon=%d", szKillerName == NULL ? "??" : szKillerName, szKilleeName == NULL ? "??" : szKillerName, byteWeapon);
+	QString killerStr = (killerId == INVALID_PLAYER_ID) ? QString("None") : (szKillerName && szKillerName[0] ? QString::fromUtf8(szKillerName) : QString("ID %1").arg(killerId));
+	QString killeeStr = (szKilleeName && szKilleeName[0]) ? QString::fromUtf8(szKilleeName) : QString("ID %1").arg(killeeId);
+
+	AppendChatBox("[DeathMessage] killer=%s killee=%s weapon=%d", killerStr.toUtf8().data(), killeeStr.toUtf8().data(), byteWeapon);
 	if (LogSettings.RPC)
 	{
-		AppendLogF("[DeathMessage] killer=%s killee=%s weapon=%d", szKillerName == NULL ? "??" : szKillerName, szKilleeName == NULL ? "??" : szKillerName, byteWeapon);
-		_logs->Log(LogLevel::DEBUG, "[DeathMessage] killer=%s killee=%s weapon=%d", szKillerName == NULL ? "??" : szKillerName, szKilleeName == NULL ? "??" : szKillerName, byteWeapon);
+		AppendLogF("[DeathMessage] killer=%s killee=%s weapon=%d", killerStr.toUtf8().data(), killeeStr.toUtf8().data(), byteWeapon);
+		_logs->Log(LogLevel::DEBUG, "[DeathMessage] killer=%s killee=%s weapon=%d", killerStr.toUtf8().data(), killeeStr.toUtf8().data(), byteWeapon);
 	}
 }
 

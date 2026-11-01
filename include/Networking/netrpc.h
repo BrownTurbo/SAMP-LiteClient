@@ -13,6 +13,7 @@
 #include "../Game/menus.h"
 #include "../WorkerClass.h"
 #include "../Game/audiostream.h"
+#include "../Game/localplayer.h"
 
 extern int iNetModeNormalOnfootSendRate, iNetModeNormalIncarSendRate, iNetModeFiringSendRate, iNetModeSendMultiplier;
 extern char g_szHostName[256];
@@ -47,7 +48,7 @@ struct stSAMPDialog
 	char szButton1[257];
 	uint8_t bButton2Len;
 	char szButton2[257];
-	char szInfo[257];
+	char szInfo[4096];
 };
 extern struct stSAMPDialog sampDialog;
 

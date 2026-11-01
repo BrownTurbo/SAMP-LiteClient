@@ -1,7 +1,21 @@
 #include "../../include/Game/menus.h"
 
+QPointer<SAMPMenu> SAMPMenu::activeMenu = nullptr;
+
+void SAMPMenu::closeActiveMenu()
+{
+    if (activeMenu)
+    {
+        activeMenu->close();
+        activeMenu = nullptr;
+    }
+}
+
 SAMPMenu::SAMPMenu(QString title, int columns, QStringList Col1Items, bool *Col1ItemsState, QString Col1Header, QStringList Col2Items, bool *Col2ItemsState, QString Col2Header, QWidget *parent)
-    : QWidget(parent), columnCount(columns > 2 ? 2 : columns)
+    : QWidget(parent), columnCount(columns > 2 ? 2 : (columns < 1 ? 1 : columns)), currentColumn(1), m_responded(false),
+      mainLayout(nullptr), columnsLayout(nullptr), titleLabel(nullptr),
+      col1Layout(nullptr), col1HeaderLabel(nullptr), col1List(nullptr),
+      col2Layout(nullptr), col2HeaderLabel(nullptr), col2List(nullptr)
 {
     if (Col1Items.size() == 0 || Col1Items.size() > MAX_MENU_ITEMS || Col2Items.size() > MAX_MENU_ITEMS)
         return;
@@ -76,8 +90,11 @@ SAMPMenu::SAMPMenu(QString title, int columns, QStringList Col1Items, bool *Col1
         currentColumn = 1;
     });
 
-    this->connect(col2List, &QListWidget::itemClicked, this, [=, this]
-                  { currentColumn = 2; });
+    if (columnCount > 1 && col2List)
+    {
+        this->connect(col2List, &QListWidget::itemClicked, this, [=, this]
+                      { currentColumn = 2; });
+    }
 
     currentColumn = 1;
 }
@@ -93,9 +110,23 @@ void SAMPMenu::closeMenu()
         this->close();
 }
 
+void SAMPMenu::closeEvent(QCloseEvent *event)
+{
+    if (!m_responded)
+    {
+        m_responded = true;
+        emit menuResponse(-1, false);
+    }
+    if (activeMenu == this)
+        activeMenu = nullptr;
+    QWidget::closeEvent(event);
+}
+
 void SAMPMenu::keyPressEvent(QKeyEvent *event)
 {
-    QListWidget *activeList = (currentColumn == 1) ? col1List : col2List;
+    QListWidget *activeList = (currentColumn == 2 && col2List) ? col2List : col1List;
+    if (!activeList)
+        return;
     int currentRow = activeList->currentRow();
 
     switch (event->key())
@@ -111,7 +142,7 @@ void SAMPMenu::keyPressEvent(QKeyEvent *event)
             break;
         }
         case Qt::Key_Left: {
-            if (currentColumn == 2) {
+            if (currentColumn == 2 && col1List) {
                 col1List->setFocus();
                 currentColumn = 1;
                 col1List->setCurrentRow(currentRow < col1List->count() ? currentRow : col1List->count() - 1);
@@ -119,7 +150,7 @@ void SAMPMenu::keyPressEvent(QKeyEvent *event)
             break;
         }
         case Qt::Key_Right: {
-            if (currentColumn == 1 && columnCount > 1) {
+            if (currentColumn == 1 && columnCount > 1 && col2List) {
                 col2List->setFocus();
                 currentColumn = 2;
                 col2List->setCurrentRow(currentRow < col2List->count() ? currentRow : col2List->count() - 1);
@@ -127,12 +158,22 @@ void SAMPMenu::keyPressEvent(QKeyEvent *event)
             break;
         }
         case Qt::Key_Escape: {
-            emit menuResponse(-1, false);
+            if (!m_responded)
+            {
+                m_responded = true;
+                emit menuResponse(-1, false);
+            }
+            this->close();
             break;
         }
         case Qt::Key_Return:
         case Qt::Key_Enter: {
-            emit menuResponse(activeList->currentRow(), true);
+            if (!m_responded && activeList && activeList->currentRow() >= 0)
+            {
+                m_responded = true;
+                emit menuResponse(activeList->currentRow(), true);
+            }
+            this->close();
             break;
         }
         default:

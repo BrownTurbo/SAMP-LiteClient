@@ -15,7 +15,11 @@
 #include <QtWidgets/QVBoxLayout>
 #include <QtWidgets/QHBoxLayout>
 #include <QtCore/QStringList>
+#include <QtCore/QThreadPool>
+#include <QtCore/QRunnable>
+#include <QtCore/QPointer>
 
+#include "../lib/tinyxml/tinyxml2.h"
 #include "./globals.h"
 #include "./utils.h"
 
@@ -24,6 +28,7 @@
 #include <map>
 #include <variant>
 #include <vector>
+#include <atomic>
 
 #define MAX_SERVERS (150)
 
@@ -35,11 +40,33 @@ public:
     ServersList(QWidget *parent = nullptr);
     ~ServersList();
 
-private:
+    struct srvDTA
+    {
+        std::string address;
+        int port;
+        std::string name;
+        int ping = -1;
+    };
+
+    bool addServer(const srvDTA& server);
+    bool removeServer(int serverid);
+
+    void loadServers();
+    void saveServers();
+
+public slots:
+    void onTick();
+
+private slots:
     void onRemovePressed();
     void onAddPressed();
     void onSavePressed();
     void onCancelPressed();
+    void onCellDoubleClicked(int row, int column);
+    void updateServerRow(int serverID, const QString& name, int ping, bool online);
+
+private:
+    void queryServerAsync(int serverID, const std::string& address, int port);
 
     QTableWidget *serverL;
     QFrame *serverLine;
@@ -50,21 +77,11 @@ private:
     QLineEdit *lineEdit;
     QLabel *label;
 
-    struct srvDTA
-    {
-        std::string address;
-        int port;
-    };
-
     using ListValue = std::variant<std::string, int>;
     std::map<int, std::vector<ListValue>> srvData;
 
     int srvsCount = -1;
-
-public:
-    bool addServer(const srvDTA& server);
-    bool removeServer(int serverid);
-
-    void onTick();
+    std::atomic<bool> isQuerying{false};
+    int tickCounter = 0;
 };
 #endif

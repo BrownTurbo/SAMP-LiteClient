@@ -65,16 +65,32 @@ ConnectWindow::ConnectWindow(QWidget *parent) : QWizardPage(parent) {
         groupBox->setTitle(QString::fromUtf8("Information"));
         SName->setText(QString::fromUtf8("Name:"));
         SIP->setText(QString::fromUtf8("IP:"));
-        SIPValue->setText(QString::fromUtf8("127.0.0.1:7777"));
-        SNameValue->setText(QString::fromUtf8("BrownTurbo's Extreme Evolution"));
+
+        updateServerInfo();
 
         QMetaObject::connectSlotsByName(this);
 }
 
 ConnectWindow::~ConnectWindow() {}
 
+void ConnectWindow::updateServerInfo()
+{
+    QString srvAddr = (strlen(settings.server.szAddr) > 0) ? QString::fromUtf8(settings.server.szAddr) : QString::fromUtf8("127.0.0.1");
+    int srvPort = (settings.server.iPort > 0) ? settings.server.iPort : 7777;
+    SIPValue->setText(QString("%1:%2").arg(srvAddr).arg(srvPort));
+    SNameValue->setText(QString::fromUtf8("SA-MP Server"));
+    if (strlen(settings.server.szPassword) > 0)
+        SPasswordBox->setText(QString::fromUtf8(settings.server.szPassword));
+}
+
 void ConnectWindow::onConnectPressed()
 {
+    if (!SPasswordBox->text().isEmpty())
+    {
+        strncpy(settings.server.szPassword, SPasswordBox->text().toUtf8().constData(), sizeof(settings.server.szPassword) - 1);
+        settings.server.szPassword[sizeof(settings.server.szPassword) - 1] = '\0';
+    }
+
     if (GetGameState() != GAMESTATE_CONNECTED)
     {
         QSharedPointer<QPushButton> _connectBtn = Globals::instance().getConnectButton();

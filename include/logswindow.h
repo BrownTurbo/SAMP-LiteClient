@@ -8,6 +8,7 @@
 #include <QtWidgets/QTextBrowser>
 #include <QtWidgets/QWidget>
 #include <QtCore/QSharedPointer>
+#include <QtCore/QPointer>
 
 #include "globals.h"
 //#include "utils.h"

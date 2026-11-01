@@ -19,6 +19,7 @@
 #include <QtCore/QTimer>
 #include <QtMultimedia/QAudioDevice>
 #include <QtCore/QSharedPointer>
+#include <QtCore/QPointer>
 #include <QtCore/QThread>
 #include <QtGui/QStandardItemModel>
 #include <QtGui/QStandardItem>
@@ -68,6 +69,13 @@ private slots:
 public:
     void sendMessage();
 
+    Scoreboard* getScoreboardWindow() const { return scoreboardWindow; }
+    ServersList* getServersListWindow() const { return serverlstWindow; }
+    ConnectWindow* getConnectWindow() const { return connectWindow; }
+    SettingsWindow* getSettingsWindow() const { return settingsWindow; }
+    PlaybackWindow* getPlaybackWindow() const { return playbackWindow; }
+    LogsWindow* getLogsWindow() const { return logsWindow; }
+
 private:
     QTextBrowser *chatDisplay;
     QLineEdit *messageInput;
@@ -94,6 +102,13 @@ private:
     PlaybackWindow *playbackWindow = nullptr;
     Scoreboard *scoreboardWindow = nullptr;
     ServersList *serverlstWindow = nullptr;
+
+    QDockWidget *logsDock = nullptr;
+    QDockWidget *settingsDock = nullptr;
+    QDockWidget *connectDock = nullptr;
+    QDockWidget *playbackDock = nullptr;
+    QDockWidget *scoreboardDock = nullptr;
+    QDockWidget *serverlstDock = nullptr;
 
     RakNetWorker *Nworker;
 

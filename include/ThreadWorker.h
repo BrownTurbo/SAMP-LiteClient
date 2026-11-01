@@ -43,7 +43,6 @@ public:
             else
                 thread->wait(waitT);
             thread->deleteLater();
-            delete thread;
         }
         threads.clear();
         workerQueue.clear();

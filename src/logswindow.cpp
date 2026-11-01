@@ -1,4 +1,5 @@
 #include "logswindow.h"
+#include "logs.h"
 
 LogsWindow::LogsWindow(QWidget *parent) : QWidget(parent) {
         if (this->objectName().isEmpty())
@@ -21,13 +22,18 @@ LogsWindow::LogsWindow(QWidget *parent) : QWidget(parent) {
 
         this->setWindowTitle(QString::fromUtf8("Logs"));
 
-        Globals::instance().setLogsD(QSharedPointer<QTextBrowser>(logsBrowser, [](QTextBrowser* ptr) {
-            if (ptr && !ptr->parent())
+        QPointer<QTextBrowser> guarded(logsBrowser);
+        Globals::instance().setLogsD(QSharedPointer<QTextBrowser>(logsBrowser, [guarded](QTextBrowser* ptr) {
+            if (guarded && ptr && !guarded->parent())
                 ptr->deleteLater();
         }));
         Globals::instance().setLogsW(this);
+        Logs::flushPendingLogs();
 
         QMetaObject::connectSlotsByName(this);
 }
 
-LogsWindow::~LogsWindow() {}
+LogsWindow::~LogsWindow() {
+    Globals::instance().setLogsD(nullptr);
+    Globals::instance().setLogsW(nullptr);
+}

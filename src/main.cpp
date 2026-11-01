@@ -13,9 +13,11 @@ int main(int argc, char *argv[]) {
 
     MainWindow mainWindow;
     mainWindow.show();
-    QScreen* screen = QGuiApplication::primaryScreen();
+    QScreen* screen = QGuiApplication::screenAt(QCursor::pos());
+    if (!screen)
+        screen = QGuiApplication::primaryScreen();
     if (screen) {
-        QRect screenGeometry = screen->geometry();
+        QRect screenGeometry = screen->availableGeometry();
         mainWindow.move(screenGeometry.center() - mainWindow.rect().center());
     }
     return app.exec();

@@ -10,7 +10,7 @@ namespace PBRecorder
 
 	// The process of recording can not be paused
 	int iPlaybackType = Playback::PLAYBACK_TYPE_NONE;
-	char *recordTitle;
+	char recordTitle[75] = {0};
 	uint32_t dwStartTime;
 	int iPacketRecorded = 0;
 	int iTargetPlayer = INVALID_PLAYER_ID;
@@ -20,9 +20,16 @@ namespace PBRecorder
 		if (iPlaybackType == Playback::PLAYBACK_TYPE_NONE)
 		{
 			iPlaybackType = type;
-			recordTitle = title;
+			if (title) {
+				strncpy(recordTitle, title, sizeof(recordTitle) - 1);
+				recordTitle[sizeof(recordTitle) - 1] = '\0';
+			} else {
+				recordTitle[0] = '\0';
+			}
 			dwStartTime = GetTickCount();
 			iPacketRecorded = 0;
+			_logs->Log(LogLevel::INFO, "[RECORDER] Recording initialized: title='%s', type=%s.",
+				recordTitle, type == Playback::PLAYBACK_TYPE_DRIVER ? "DRIVER" : "ONFOOT");
 			return true;
 		}
 		return false;
@@ -66,21 +73,19 @@ namespace PBRecorder
 		}
 
 		char filePath[512];
-		sprintf(filePath, "%s\\%s.rec", Playback::szPlaybackDirectory, szFile);
+		snprintf(filePath, sizeof(filePath), "%s/%s.rec", Playback::szPlaybackDirectory, szFile);
 		QFile recF{filePath};
 		if (!recF.open(QIODevice::WriteOnly))
 		{
 			if (errmsg != nullptr)
 				strcpy(errmsg, "Unable to open the file");
+			_logs->Log(LogLevel::ERROR, "[RECORDER] Failed to open '%s' for writing.", filePath);
 			return false;
 		}
 
 		// Write the playback type and file info
-		QString recordStr;
-		recordStr = "### ";
-		char *__tmp;
-		snprintf(__tmp, 128, "title=%s;", recordTitle);
-		recordStr.append(__tmp);
+		QString recordStr = QString("### type=%1;title=%2;\n").arg(iPlaybackType).arg(recordTitle);
+		char __tmp[512];
 		QTextStream output(&recF);
 		output << recordStr;
 		if (output.status() == output.WriteFailed)
@@ -94,31 +99,21 @@ namespace PBRecorder
 		{
 			for (int i = 0; i < iPacketRecorded; i++)
 			{
-				recordStr = "# ";
-				snprintf(__tmp, 128, "timestamp=%d;", v_dwTime[i]);
-				recordStr.append(__tmp);
+				recordStr = QString("# type=%1;timestamp=%2;").arg(iPlaybackType).arg(v_dwTime[i]);
 
-				output << recordStr;
-				if (output.status() == output.WriteFailed)
-				{
-					if (errmsg != nullptr)
-						strcpy(errmsg, "Unable to write the record's timestamp to the file");
-					break;
-				}
-
-				snprintf(__tmp, 128, "QuaternionW=%0.f;QuaternionX=%0.f;QuaternionY=%0.f;QuaternionZ=%0.f;", v_vehicleSyncData[i].fQuaternion[0], v_vehicleSyncData[i].fQuaternion[1], v_vehicleSyncData[i].fQuaternion[2], v_vehicleSyncData[i].fQuaternion[3]);
+				snprintf(__tmp, sizeof(__tmp), "QuaternionW=%.4f;QuaternionX=%.4f;QuaternionY=%.4f;QuaternionZ=%.4f;", v_vehicleSyncData[i].fQuaternion[0], v_vehicleSyncData[i].fQuaternion[1], v_vehicleSyncData[i].fQuaternion[2], v_vehicleSyncData[i].fQuaternion[3]);
 				recordStr.append(__tmp);
-				snprintf(__tmp, 128, "CurrentPosX=%0.f;CurrentPosY=%0.f;CurrentPosZ=%0.f;", v_vehicleSyncData[i].vecPos[0], v_vehicleSyncData[i].vecPos[1], v_vehicleSyncData[i].vecPos[2]);
+				snprintf(__tmp, sizeof(__tmp), "CurrentPosX=%.4f;CurrentPosY=%.4f;CurrentPosZ=%.4f;", v_vehicleSyncData[i].vecPos[0], v_vehicleSyncData[i].vecPos[1], v_vehicleSyncData[i].vecPos[2]);
 				recordStr.append(__tmp);
-				snprintf(__tmp, 128, "VelocityX=%0.f;VelocityY=%0.f;VelocityZ=%0.f;", v_vehicleSyncData[i].fMoveSpeed[0], v_vehicleSyncData[i].fMoveSpeed[1], v_vehicleSyncData[i].fMoveSpeed[2]);
+				snprintf(__tmp, sizeof(__tmp), "VelocityX=%.4f;VelocityY=%.4f;VelocityZ=%.4f;", v_vehicleSyncData[i].fMoveSpeed[0], v_vehicleSyncData[i].fMoveSpeed[1], v_vehicleSyncData[i].fMoveSpeed[2]);
 				recordStr.append(__tmp);
-				snprintf(__tmp, 128, "CurrentWeapon=%d;", v_vehicleSyncData[i].BYTECurrentWeapon);
+				snprintf(__tmp, sizeof(__tmp), "CurrentWeapon=%d;", v_vehicleSyncData[i].BYTECurrentWeapon);
 				recordStr.append(__tmp);
-				snprintf(__tmp, 128, "SirenOn=%d;", v_vehicleSyncData[i].BYTESirenOn);
+				snprintf(__tmp, sizeof(__tmp), "SirenOn=%d;", v_vehicleSyncData[i].BYTESirenOn);
 				recordStr.append(__tmp);
-				snprintf(__tmp, 128, "LandingGearState=%d;", v_vehicleSyncData[i].BYTELandingGearState);
+				snprintf(__tmp, sizeof(__tmp), "LandingGearState=%d;", v_vehicleSyncData[i].BYTELandingGearState);
 				recordStr.append(__tmp);
-				snprintf(__tmp, 128, "TrainSpeed=%0.f;", v_vehicleSyncData[i].fTrainSpeed);
+				snprintf(__tmp, sizeof(__tmp), "TrainSpeed=%.4f;\n", v_vehicleSyncData[i].fTrainSpeed);
 				recordStr.append(__tmp);
 
 				output << recordStr;
@@ -134,43 +129,34 @@ namespace PBRecorder
 		{
 			for (int i = 0; i < iPacketRecorded; i++)
 			{
-				recordStr = "# ";
-				snprintf(__tmp, 128, "dwTime=%d;", v_dwTime[i]);
-				recordStr.append(__tmp);
+				recordStr = QString("# type=%1;timestamp=%2;").arg(iPlaybackType).arg(v_dwTime[i]);
 
-				output << recordStr;
-				if (output.status() == output.WriteFailed)
-				{
-					if (errmsg != nullptr)
-						strcpy(errmsg, "Unable to write the record's dwTime to the file");
-					break;
-				}
-
-				snprintf(__tmp, 128, "CurrentWeapon=%d;", v_playerSyncData[i].BYTECurrentWeapon);
+				snprintf(__tmp, sizeof(__tmp), "CurrentWeapon=%d;", v_playerSyncData[i].BYTECurrentWeapon);
 				recordStr.append(__tmp);
-				snprintf(__tmp, 128, "SpecialAction=%d;", v_playerSyncData[i].BYTESpecialAction);
+				snprintf(__tmp, sizeof(__tmp), "SpecialAction=%d;", v_playerSyncData[i].BYTESpecialAction);
 				recordStr.append(__tmp);
-				snprintf(__tmp, 128, "AnimationIndex=%d;AnimationFlags=%d;", v_playerSyncData[i].AnimationIndex, v_playerSyncData[i].AnimationFlags);
+				snprintf(__tmp, sizeof(__tmp), "AnimationIndex=%d;AnimationFlags=%d;", v_playerSyncData[i].AnimationIndex, v_playerSyncData[i].AnimationFlags);
 				recordStr.append(__tmp);
-				snprintf(__tmp, 128, "QuaternionW=%0.f;QuaternionX=%0.f;QuaternionY=%0.f;QuaternionZ=%0.f;", v_playerSyncData[i].fQuaternion[0], v_playerSyncData[i].fQuaternion[1], v_playerSyncData[i].fQuaternion[2], v_playerSyncData[i].fQuaternion[3]);
+				snprintf(__tmp, sizeof(__tmp), "QuaternionW=%.4f;QuaternionX=%.4f;QuaternionY=%.4f;QuaternionZ=%.4f;", v_playerSyncData[i].fQuaternion[0], v_playerSyncData[i].fQuaternion[1], v_playerSyncData[i].fQuaternion[2], v_playerSyncData[i].fQuaternion[3]);
 				recordStr.append(__tmp);
-				snprintf(__tmp, 128, "CurrentPosX=%0.f;CurrentPosY=%0.f;CurrentPosZ=%0.f;", v_playerSyncData[i].fCurrentPosition[0], v_playerSyncData[i].fCurrentPosition[1], v_playerSyncData[i].fCurrentPosition[2]);
+				snprintf(__tmp, sizeof(__tmp), "CurrentPosX=%.4f;CurrentPosY=%.4f;CurrentPosZ=%.4f;", v_playerSyncData[i].fCurrentPosition[0], v_playerSyncData[i].fCurrentPosition[1], v_playerSyncData[i].fCurrentPosition[2]);
 				recordStr.append(__tmp);
-				snprintf(__tmp, 128, "CurrentAngle=%0.f;", v_playerSyncData[i].fCurrentAngle);
+				snprintf(__tmp, sizeof(__tmp), "CurrentAngle=%.4f;", v_playerSyncData[i].fCurrentAngle);
 				recordStr.append(__tmp);
-				snprintf(__tmp, 128, "VelocityX=%0.f;VelocityY=%0.f;VelocityZ=%0.f;", v_playerSyncData[i].fMoveSpeed[0], v_playerSyncData[i].fMoveSpeed[1], v_playerSyncData[i].fMoveSpeed[2]);
+				snprintf(__tmp, sizeof(__tmp), "VelocityX=%.4f;VelocityY=%.4f;VelocityZ=%.4f;", v_playerSyncData[i].fMoveSpeed[0], v_playerSyncData[i].fMoveSpeed[1], v_playerSyncData[i].fMoveSpeed[2]);
 				recordStr.append(__tmp);
-				snprintf(__tmp, 128, "SurfOffsetX=%0.f;SurfOffsetY=%0.f;SurfOffsetZ=%0.f;", v_playerSyncData[i].fSurfOffsets[0], v_playerSyncData[i].fSurfOffsets[1], v_playerSyncData[i].fSurfOffsets[2]);
+				snprintf(__tmp, sizeof(__tmp), "SurfOffsetX=%.4f;SurfOffsetY=%.4f;SurfOffsetZ=%.4f;", v_playerSyncData[i].fSurfOffsets[0], v_playerSyncData[i].fSurfOffsets[1], v_playerSyncData[i].fSurfOffsets[2]);
 				recordStr.append(__tmp);
-				snprintf(__tmp, 128, "CurrentInterior=%d;", v_playerSyncData[i].BYTEInteriorId);
+				snprintf(__tmp, sizeof(__tmp), "CurrentInterior=%d;", v_playerSyncData[i].BYTEInteriorId);
 				recordStr.append(__tmp);
-				snprintf(__tmp, 128, "FightingStyle=%d;", v_playerSyncData[i].FightingStyle);
+				snprintf(__tmp, sizeof(__tmp), "FightingStyle=%d;", v_playerSyncData[i].FightingStyle);
 				recordStr.append(__tmp);
 				for (int skillID = 0; skillID < MAX_SKILLS; skillID++)
 				{
-					snprintf(__tmp, 128, "Skill%dLevel=%d;", skillID, v_playerSyncData[i].SkillLevel[skillID]);
+					snprintf(__tmp, sizeof(__tmp), "Skill%dLevel=%d;", skillID, v_playerSyncData[i].SkillLevel[skillID]);
 					recordStr.append(__tmp);
 				}
+				recordStr.append("\n");
 
 				output << recordStr;
 				if (output.status() == output.WriteFailed)
@@ -185,6 +171,7 @@ namespace PBRecorder
 		iPlaybackType = Playback::PLAYBACK_TYPE_NONE;
 
 		recF.close();
+		_logs->Log(LogLevel::INFO, "[RECORDER] Recording saved to '%s' (%d packets).", filePath, iPacketRecorded);
 		return true;
 	}
 }

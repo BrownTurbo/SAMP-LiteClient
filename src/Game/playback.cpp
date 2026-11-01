@@ -8,7 +8,7 @@ namespace Playback
 	const char szPlaybackDirectory[] = "playbacks";
 	RECORD_DATA recData[1024];
 	ePBType iPlaybackType;
-	char *recordTitle;
+	char recordTitle[128] = {0};
 
 	uint16_t dwStartTime;
 	bool bPlaying = false;
@@ -26,10 +26,11 @@ namespace Playback
 			return false;
 		}
 
-		char fileName[128];
-		sprintf(fileName, "%s\\%s.rec", szPlaybackDirectory, szFile);
+		char fileName[256];
+		snprintf(fileName, sizeof(fileName), "%s/%s.rec", szPlaybackDirectory, szFile);
 
 		unsigned short linesCount = 0;
+		memset(recData, 0, sizeof(recData));
 		QFile recF{fileName};
 		if (recF.open(QFile::ReadOnly | QFile::Text))
 		{
@@ -44,115 +45,117 @@ namespace Playback
 					if (strncmp(data + idx, "### ", 4) == 0)
 					{
 						idx += 4;
-						QString __Data = QString::fromStdString(std::string(data + idx, (size_t)len - idx + 1));
-						QStringList vars = __Data.split(';');
+						QString __Data = QString::fromUtf8(data + idx, len - idx).trimmed();
+						QStringList vars = __Data.split(';', Qt::SkipEmptyParts);
 						for (int varIDX = 0; varIDX < vars.size(); varIDX++)
 						{
 							QStringList var = vars.at(varIDX).split('=');
-							QString vName = var.at(0);
-							QString vValue = var.at(1);
-							if (strcmp(vName.toUtf8().data(), "title"))
+							if (var.size() < 2) continue;
+							QString vName = var.at(0).trimmed();
+							QString vValue = var.at(1).trimmed();
+							if (vName == "title")
 							{
-								recordTitle = vValue.toUtf8().data();
+								strncpy(recordTitle, vValue.toUtf8().constData(), sizeof(recordTitle) - 1);
+								recordTitle[sizeof(recordTitle) - 1] = '\0';
+							}
+							else if (vName == "type")
+							{
+								unsigned short recordType = vValue.toUShort();
+								if (recordType == 1 || recordType == Playback::PLAYBACK_TYPE_DRIVER)
+									iPlaybackType = Playback::PLAYBACK_TYPE_DRIVER;
+								else if (recordType == 2 || recordType == Playback::PLAYBACK_TYPE_ONFOOT)
+									iPlaybackType = Playback::PLAYBACK_TYPE_ONFOOT;
 							}
 						}
 					}
 					else if (strncmp(data + idx, "# ", 2) == 0)
 					{
+						if (linesCount >= 1024)
+							break;
 						linesCount += 1;
+						recData[linesCount - 1].type = iPlaybackType;
 						idx += 2;
-						QString __Data = QString::fromStdString(std::string(data + idx, (size_t)len - idx + 1));
-						QStringList vars = __Data.split(';');
+						QString __Data = QString::fromUtf8(data + idx, len - idx).trimmed();
+						QStringList vars = __Data.split(';', Qt::SkipEmptyParts);
 						for (int varIDX = 0; varIDX < vars.size(); varIDX++)
 						{
 							QStringList var = vars.at(varIDX).split('=');
-							QString vName = var.at(0);
-							QString vValue = var.at(1);
-							if (vName.toUtf8().data() == "type")
+							if (var.size() < 2) continue;
+							QString vName = var.at(0).trimmed();
+							QString vValue = var.at(1).trimmed();
+							if (vName == "type")
 							{
 								unsigned short recordType = vValue.toUShort();
-								switch (recordType)
-								{
-									case 0:
-									{
-										recData[(linesCount - 1)].type = Playback::PLAYBACK_TYPE_NONE;
-										break;
-									}
-									case 1:
-									{
-										recData[(linesCount - 1)].type = Playback::PLAYBACK_TYPE_ONFOOT;
-										break;
-									}
-									case 2:
-									{
-										recData[(linesCount - 1)].type = Playback::PLAYBACK_TYPE_DRIVER;
-										break;
-									}
-								}
+								if (recordType == 1 || recordType == Playback::PLAYBACK_TYPE_DRIVER)
+									recData[(linesCount - 1)].type = Playback::PLAYBACK_TYPE_DRIVER;
+								else if (recordType == 2 || recordType == Playback::PLAYBACK_TYPE_ONFOOT)
+									recData[(linesCount - 1)].type = Playback::PLAYBACK_TYPE_ONFOOT;
+								else
+									recData[(linesCount - 1)].type = Playback::PLAYBACK_TYPE_NONE;
 							}
-							else if (vName.toUtf8().data() == "timestamp")
+							else if (vName == "timestamp" || vName == "dwTime")
 							{
-								recData[(linesCount - 1)].timestamp = vValue.toUShort();
+								recData[(linesCount - 1)].timestamp = vValue.toULong();
 							}
-							else if (vName.toUtf8().data() == "CurrentPosX")
+							else if (vName == "CurrentPosX")
 							{
 								recData[(linesCount - 1)].CurrentPosX = vValue.toFloat();
 							}
-							else if (vName.toUtf8().data() == "CurrentPosY")
+							else if (vName == "CurrentPosY")
 							{
 								recData[(linesCount - 1)].CurrentPosY = vValue.toFloat();
 							}
-							else if (vName.toUtf8().data() == "CurrentPosZ")
+							else if (vName == "CurrentPosZ")
 							{
 								recData[(linesCount - 1)].CurrentPosZ = vValue.toFloat();
 							}
-							else if (vName.toUtf8().data() == "CurrentAngle")
+							else if (vName == "CurrentAngle")
 							{
 								recData[(linesCount - 1)].CurrentAngle = vValue.toFloat();
 							}
-							else if (vName.toUtf8().data() == "VelocityX")
+							else if (vName == "VelocityX")
 							{
 								recData[(linesCount - 1)].VelocityX = vValue.toFloat();
 							}
-							else if (vName.toUtf8().data() == "VelocityY")
+							else if (vName == "VelocityY")
 							{
 								recData[(linesCount - 1)].VelocityY = vValue.toFloat();
 							}
-							else if (vName.toUtf8().data() == "VelocityZ")
+							else if (vName == "VelocityZ")
 							{
 								recData[(linesCount - 1)].VelocityZ = vValue.toFloat();
 							}
-							else if (vName.toUtf8().data() == "QuaternionW")
+							else if (vName == "QuaternionW")
 							{
 								recData[(linesCount - 1)].QuaternionW = vValue.toFloat();
 							}
-							else if (vName.toUtf8().data() == "QuaternionX")
+							else if (vName == "QuaternionX")
 							{
 								recData[(linesCount - 1)].QuaternionX = vValue.toFloat();
 							}
-							else if (vName.toUtf8().data() == "QuaternionY")
+							else if (vName == "QuaternionY")
 							{
 								recData[(linesCount - 1)].QuaternionY = vValue.toFloat();
 							}
-							else if (vName.toUtf8().data() == "QuaternionZ")
+							else if (vName == "QuaternionZ")
 							{
 								recData[(linesCount - 1)].QuaternionZ = vValue.toFloat();
 							}
-							else if (vName.toUtf8().data() == "TrainSpeed")
+							else if (vName == "TrainSpeed")
 							{
 								recData[(linesCount - 1)].TrainSpeed = vValue.toFloat();
 							}
-							else if (vName.toUtf8().data() == "CurrentWeapon")
+							else if (vName == "CurrentWeapon")
 							{
-								recData[(linesCount - 1)].CurrentWeapon = vValue.toUShort();
+								recData[(linesCount - 1)].CurrentWeapon = (uint8_t)vValue.toUShort();
 							}
-							else if (vName.toUtf8().data() == "SirenOn")
+							else if (vName == "SirenOn")
 							{
-								recData[(linesCount - 1)].SirenOn = vValue.toUShort();
+								recData[(linesCount - 1)].SirenOn = (uint8_t)vValue.toUShort();
 							}
-							else if (vName.toUtf8().data() == "LandingGearState")
+							else if (vName == "LandingGearState")
 							{
-								recData[(linesCount - 1)].LandingGearState = vValue.toUShort();
+								recData[(linesCount - 1)].LandingGearState = (uint8_t)vValue.toUShort();
 							}
 						}
 					}
@@ -163,11 +166,15 @@ namespace Playback
 		{
 			if (errmsg != nullptr)
 				strcpy(errmsg, "Unable to open the file");
+			_logs->Log(LogLevel::ERROR, "[PLAYBACK] Could not open playback file '%s'.", fileName);
 			return false;
 		}
 		recF.close();
 
-		for (int lineNum = 0; lineNum < 1024; lineNum++)
+		v_dwTime.clear();
+		SyncData.clear();
+
+		for (int lineNum = 0; lineNum < linesCount; lineNum++)
 		{
 			if (recData[lineNum].type == PLAYBACK_TYPE_DRIVER)
 			{
@@ -177,6 +184,17 @@ namespace Playback
 				vehicleSyncData.vecPos[0] = recData[lineNum].CurrentPosX;
 				vehicleSyncData.vecPos[1] = recData[lineNum].CurrentPosY;
 				vehicleSyncData.vecPos[2] = recData[lineNum].CurrentPosZ;
+				vehicleSyncData.fQuaternion[0] = recData[lineNum].QuaternionW;
+				vehicleSyncData.fQuaternion[1] = recData[lineNum].QuaternionX;
+				vehicleSyncData.fQuaternion[2] = recData[lineNum].QuaternionY;
+				vehicleSyncData.fQuaternion[3] = recData[lineNum].QuaternionZ;
+				vehicleSyncData.fMoveSpeed[0] = recData[lineNum].VelocityX;
+				vehicleSyncData.fMoveSpeed[1] = recData[lineNum].VelocityY;
+				vehicleSyncData.fMoveSpeed[2] = recData[lineNum].VelocityZ;
+				vehicleSyncData.BYTECurrentWeapon = recData[lineNum].CurrentWeapon;
+				vehicleSyncData.BYTESirenOn = recData[lineNum].SirenOn;
+				vehicleSyncData.BYTELandingGearState = recData[lineNum].LandingGearState;
+				vehicleSyncData.fTrainSpeed = recData[lineNum].TrainSpeed;
 
 				v_dwTime.push_back(recData[lineNum].timestamp);
 				SyncData.push_back(vehicleSyncData);
@@ -189,6 +207,15 @@ namespace Playback
 				playerSyncData.fCurrentPosition[0] = recData[lineNum].CurrentPosX;
 				playerSyncData.fCurrentPosition[1] = recData[lineNum].CurrentPosY;
 				playerSyncData.fCurrentPosition[2] = recData[lineNum].CurrentPosZ;
+				playerSyncData.fQuaternion[0] = recData[lineNum].QuaternionW;
+				playerSyncData.fQuaternion[1] = recData[lineNum].QuaternionX;
+				playerSyncData.fQuaternion[2] = recData[lineNum].QuaternionY;
+				playerSyncData.fQuaternion[3] = recData[lineNum].QuaternionZ;
+				playerSyncData.fCurrentAngle = recData[lineNum].CurrentAngle;
+				playerSyncData.fMoveSpeed[0] = recData[lineNum].VelocityX;
+				playerSyncData.fMoveSpeed[1] = recData[lineNum].VelocityY;
+				playerSyncData.fMoveSpeed[2] = recData[lineNum].VelocityZ;
+				playerSyncData.BYTECurrentWeapon = recData[lineNum].CurrentWeapon;
 
 				v_dwTime.push_back(recData[lineNum].timestamp);
 				SyncData.push_back(playerSyncData);
@@ -196,42 +223,54 @@ namespace Playback
 		}
 
 		iCurrentIndex = 0;
+		_logs->Log(LogLevel::INFO, "[PLAYBACK] Loaded '%s' with %d packets (Title: '%s', Type: %s).",
+			szFile, linesCount, recordTitle, iPlaybackType == PLAYBACK_TYPE_DRIVER ? "DRIVER" : "ONFOOT");
 
 		return true;
 	}
 
 	bool Unload()
 	{
-		if (bPlaying)
-		{
-			v_dwTime.clear();
-			SyncData.clear();
-
-			bPlaying = false;
-			return true;
-		}
-		return false;
+		_logs->Log(LogLevel::INFO, "[PLAYBACK] Playback unloaded.");
+		v_dwTime.clear();
+		SyncData.clear();
+		bPlaying = false;
+		iCurrentIndex = 0;
+		dwStartTime = 0;
+		return true;
 	}
 
 	void StartFirstEver()
 	{
 		bPlaying = true;
 		dwStartTime = GetTickCount();
+		iCurrentIndex = 0;
+		_logs->Log(LogLevel::INFO, "[PLAYBACK] Playback started: '%s' (%zu packets).", recordTitle, SyncData.size());
 	}
 
 	void Update()
 	{
-		dwStartTime = (GetTickCount() - v_dwTime[iCurrentIndex]);
+		if (iCurrentIndex >= 0 && iCurrentIndex < static_cast<int>(v_dwTime.size()))
+			dwStartTime = (GetTickCount() - v_dwTime[iCurrentIndex]);
 	}
 
 	void Process()
 	{
-		if(!bPlaying)
+		if (!bPlaying || SyncData.empty())
 			return;
 
-		size_t iCurrentIndex = 0;
-		std::ranges::for_each(SyncData, [&iCurrentIndex](auto CurrentValue) {
-			if(iCurrentIndex == 0)
+		if (iCurrentIndex == 0 && dwStartTime == 0)
+			StartFirstEver();
+
+		size_t packetIdx = 0;
+		std::ranges::for_each(SyncData, [&packetIdx](const auto &CurrentValue) {
+			if (packetIdx != static_cast<size_t>(iCurrentIndex))
+			{
+				packetIdx++;
+				return;
+			}
+
+			if (iCurrentIndex == 0 && dwStartTime == 0)
 				StartFirstEver();
 
 			// Check the time
@@ -243,15 +282,7 @@ namespace Playback
 					// Get the vehicle interface
 					if (!IsVehicleIndexValid(playerPool[g_myPlayerID].vehicleData.VehicleId))
 					{
-						ONFOOT_SYNC_DATA data;
-						memset(&data, 0, sizeof(ONFOOT_SYNC_DATA));
-
-						data.fHealth = (uint8_t)playerPool[g_myPlayerID].onfootData.fHealth;
-						data.fArmour = (uint8_t)playerPool[g_myPlayerID].onfootData.fArmour;
-						memcpy(data.fCurrentPosition, playerPool[g_myPlayerID].onfootData.fCurrentPosition, (sizeof playerPool[g_myPlayerID].onfootData.fCurrentPosition[0]) * 3);
-
-						data.AnimationIndex = playerPool[g_myPlayerID].onfootData.AnimationIndex;
-						data.AnimationFlags = playerPool[g_myPlayerID].onfootData.AnimationFlags;
+						ONFOOT_SYNC_DATA data = playerPool[g_myPlayerID].onfootData;
 
 						RakNet::BitStream bs;
 						bs.Write((uint8_t)ID_PLAYER_SYNC);
@@ -259,6 +290,8 @@ namespace Playback
 						pRakClient->Send(&bs, HIGH_PRIORITY, UNRELIABLE_SEQUENCED, 0);
 
 						Update();
+						iCurrentIndex++;
+						packetIdx++;
 						return;
 					}
 
@@ -279,6 +312,7 @@ namespace Playback
 					pRakClient->Send(&bs, HIGH_PRIORITY, UNRELIABLE_SEQUENCED, 0);
 
 					SetState(STATE_DRIVER);
+					iCurrentIndex++;
 				}
 				else if (recData[iCurrentIndex].type == PLAYBACK_TYPE_ONFOOT)
 				{
@@ -295,11 +329,20 @@ namespace Playback
 					bs.Write((char *)&data, sizeof(ONFOOT_SYNC_DATA));
 					pRakClient->Send(&bs, HIGH_PRIORITY, UNRELIABLE_SEQUENCED, 0);
 
-					playerPool[g_myPlayerID].vehicleData.VehicleId = -1;
+					playerPool[g_myPlayerID].vehicleData.VehicleId = (VEHICLEID)-1;
 					SetState(STATE_ONFOOT);
+					iCurrentIndex++;
 				}
 			}
+			packetIdx++;
 		});
+
+		if (iCurrentIndex >= static_cast<int>(SyncData.size()))
+		{
+			_logs->Log(LogLevel::INFO, "[PLAYBACK] Playback '%s' finished successfully (%zu packets).", recordTitle, SyncData.size());
+			bPlaying = false;
+			iCurrentIndex = 0;
+		}
 	}
 
 	int GetTotalPacket()

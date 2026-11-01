@@ -1,9 +1,35 @@
 #include "../../include/Game/dialogs.h"
 
+QPointer<SAMPDialog> SAMPDialog::activeDialog = nullptr;
+
+bool SAMPDialog::isDialogVisible()
+{
+    return (activeDialog != nullptr && activeDialog->isVisible());
+}
+
+void SAMPDialog::closeActiveDialog()
+{
+    if (activeDialog)
+    {
+        activeDialog->close();
+        activeDialog = nullptr;
+    }
+}
+
+bool SAMPDialog::isVisibleDialog() const
+{
+    return this->isVisible();
+}
+
+void SAMPDialog::closeDialog()
+{
+    closeActiveDialog();
+}
+
 SAMPDialog::SAMPDialog(DialogStyle style, QString title, QString info,
             QString button1, QString button2,
             QWidget* parent = nullptr)
-    : QDialog(parent), dialogStyle(style) {
+    : QDialog(parent), dialogStyle(style), m_responded(false) {
     this->setWindowTitle(title);
 
     QVBoxLayout* layout = new QVBoxLayout(this);
@@ -102,60 +128,64 @@ void SAMPDialog::setupTabList(const QString& info) {
 }
 
 void SAMPDialog::handleButtonClick(int buttonId) {
+    if (m_responded)
+        return;
+    m_responded = true;
+
     QString text;
-    bool response = false;
-    int listBoxItem = -1;
+    bool response = (buttonId == 1);
+    uint8_t sampButtonId = response ? 1 : 0;
+    int listBoxItem = 0;
 
     if (dialogStyle == INPUT || dialogStyle == PASSWORD) {
+        listBoxItem = -1;
         if (inputField) {
-            listBoxItem = 0;
-            QString inputText = inputField->text();
-            QByteArray utf8Text = inputText.toUtf8();
-            text = utf8Text.data();
+            text = inputField->text();
         }
-    } else if (dialogStyle == LIST) {
-        if (listWidget && listWidget->currentItem())
-            listBoxItem = listWidget->currentRow();
-        text = QString();
-    } else if (dialogStyle == TABLIST) {
+    } else if (dialogStyle == MSGBOX) {
+        listBoxItem = -1;
+        text = "";
+    } else if (dialogStyle == LIST || dialogStyle == TABLIST) {
         if (listWidget) {
             int selectedRow = listWidget->currentRow();
             listBoxItem = (selectedRow >= 0) ? selectedRow : 0;
+            if (response && listWidget->currentItem())
+                text = listWidget->currentItem()->text();
         }
-        text = QString();
     } else if (dialogStyle == HEADERLIST) {
         if (tableWidget) {
-            auto selectedItems = tableWidget->selectedItems();
-            if (!selectedItems.isEmpty()) {
-                listBoxItem = tableWidget->row(selectedItems.first());
-                if (listBoxItem < 0)
-                    listBoxItem = 0;
+            int selectedRow = tableWidget->currentRow();
+            listBoxItem = (selectedRow >= 0) ? selectedRow : 0;
+            if (response && selectedRow >= 0) {
+                QStringList colTexts;
+                for (int c = 0; c < tableWidget->columnCount(); ++c) {
+                    QTableWidgetItem *item = tableWidget->item(selectedRow, c);
+                    colTexts.append(item ? item->text() : QString());
+                }
+                text = colTexts.join('\t');
             }
-            else
-                listBoxItem = 0;
         }
-        text = QString();
     }
 
-    if (listBoxItem == -1)
-        listBoxItem = 0;
-
-    emit dialogResponse(buttonId, listBoxItem, text, response);
+    emit dialogResponse(sampButtonId, listBoxItem, text, response);
     this->close();
 }
 
-bool SAMPDialog::isDialogVisible() const {
-    return this->isVisible();
-}
-
-void SAMPDialog::closeDialog() {
-    if (this->isVisible())
-        this->close();
+void SAMPDialog::closeEvent(QCloseEvent *event)
+{
+    if (!m_responded)
+    {
+        m_responded = true;
+        emit dialogResponse(0, -1, QString(), false);
+    }
+    if (activeDialog == this)
+        activeDialog = nullptr;
+    QDialog::closeEvent(event);
 }
 
 void SAMPDialog::keyPressEvent(QKeyEvent *event)
 {
-    int currentRow;
+    int currentRow = 0;
     if (dialogStyle == LIST) {
         if (listWidget && listWidget->currentItem())
             currentRow = listWidget->currentRow();
@@ -208,7 +238,11 @@ void SAMPDialog::keyPressEvent(QKeyEvent *event)
             break;
         }
         case Qt::Key_Escape: {
-            emit dialogResponse(2, -1, QString(), false);
+            if (!m_responded)
+            {
+                m_responded = true;
+                emit dialogResponse(0, -1, QString(), false);
+            }
             this->close();
             break;
         }

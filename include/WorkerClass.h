@@ -17,8 +17,9 @@ class WorkerClass : public QObject
 
 public:
     explicit WorkerClass(QObject *parent = nullptr) : QObject(parent ? (parent->thread() == QThread::currentThread() ? parent : nullptr) : nullptr) {
-        this->connect(this, &WorkerClass::MessageBox, parent, &__MessageBox, Qt::QueuedConnection);
-        this->connect(this, &WorkerClass::setStateMessage, parent, &__setStateMessage, Qt::QueuedConnection);
+        QObject* contextObj = parent ? parent : (QApplication::instance() ? static_cast<QObject*>(QApplication::instance()) : this);
+        this->connect(this, &WorkerClass::MessageBox, contextObj, &__MessageBox, Qt::QueuedConnection);
+        this->connect(this, &WorkerClass::setStateMessage, contextObj, &__setStateMessage, Qt::QueuedConnection);
     }
 
 signals:

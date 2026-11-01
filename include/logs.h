@@ -47,6 +47,7 @@ class Logs : QObject
 
     public:
         void Log(LogLevel level, const char *fmt, ...);
+        static void flushPendingLogs();
 
     private slots:
         const char *GetLevelName(LogLevel level);

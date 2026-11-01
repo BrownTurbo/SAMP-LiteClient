@@ -16,17 +16,14 @@ int __MessageBox(const QString title, const QString message, QMessageBox::Standa
     if (action == ZMessageBox::Async)
     {
         messageBox->setAttribute(Qt::WA_DeleteOnClose);
-        QObject::connect(messageBox, &QMessageBox::finished, [callback, messageBox](int result)
+        QObject::connect(messageBox, &QMessageBox::finished, [callback](int result)
         {
             if (callback)
             {
                 callback(result);
-                messageBox->deleteLater();
             }
         });
         messageBox->open();
-
-        delete messageBox;
         return -1;
     }
     else
@@ -171,15 +168,19 @@ int SaveTextDrawData ( uint16_t wTextID, TEXT_DRAW_TRANSMIT *pData, char* cText 
 
 void gen_random(char *s, const int len)
 {
+	if (!s || len <= 0)
+		return;
+
 	static const char alphanum[] =
 		"0123456789"
 		"ABCDEFGHIJKLMNOPQRSTUVWXYZ"
 		"abcdefghijklmnopqrstuvwxyz";
 
-	for (int i = 0; i < len; ++i)
+	const int fillLen = len - 1;
+	for (int i = 0; i < fillLen; ++i)
 		s[i] = alphanum[rand() % (sizeof(alphanum) - 1)];
 
-	s[len] = 0;
+	s[fillLen] = '\0';
 }
 
 QByteArray readTextFile(const QString &file_path) {
@@ -262,8 +263,10 @@ QStringList Char2DArrayToQStringList(char **CharTXT, int rowCount)
 }
 
 char* formatColorMessage(const char* szMsg) {
+    if (!szMsg) return const_cast<char*>("");
     std::string input(szMsg);
-    std::string result;
+    thread_local std::string result;
+    result.clear();
 
     std::regex colorRegex("\\{([A-Fa-f0-9]{6})\\}");
     std::smatch match;
@@ -298,48 +301,58 @@ char* formatColorMessage(const char* szMsg) {
     }
     result += remaining;
 
-    char *ret = new char[result.size() + 1];
-    std::strcpy(ret, result.c_str());
-    return ret;
+    return const_cast<char*>(result.c_str());
 }
 
 void handleProperty(const QString &property, bool removeRow, const QString &value = QString())
 {
-    QSharedPointer<QStandardItemModel> _QStandardItemModel = Globals::instance().getPropertiesTree();
-    QStandardItemModel *propertiesTree = _QStandardItemModel.data();
+    QMainWindow* mainWin = getMainWindow();
+    if (!mainWin) return;
 
-    QList<QStandardItem *> items = propertiesTree->findItems(property, Qt::MatchExactly, 0);
-    if (!items.isEmpty())
-    {
-        int row = items.first()->row();
-        if (removeRow)
+    QMetaObject::invokeMethod(mainWin, [property, removeRow, value]() {
+        QSharedPointer<QStandardItemModel> _QStandardItemModel = Globals::instance().getPropertiesTree();
+        if (_QStandardItemModel.isNull())
+            return;
+        QStandardItemModel *propertiesTree = _QStandardItemModel.data();
+        if (!propertiesTree)
+            return;
+
+        QList<QStandardItem *> items = propertiesTree->findItems(property, Qt::MatchExactly, 0);
+        if (!items.isEmpty())
         {
-            propertiesTree->removeRow(row);
-            return;
+            int row = items.first()->row();
+            if (removeRow)
+            {
+                propertiesTree->removeRow(row);
+                return;
+            }
+            QStandardItem *valueItem = propertiesTree->item(row, 1);
+            if (valueItem)
+                valueItem->setText(value);
         }
-        QStandardItem *valueItem = propertiesTree->item(row, 1);
-        valueItem->setText(value);
-    }
-    else
-    {
-        if(removeRow)
-            return;
-        QStandardItem *propertyItem = new QStandardItem(property);
-        QStandardItem *valueItem = new QStandardItem(value);
-        propertyItem->setFlags(propertyItem->flags() & ~Qt::ItemIsEditable);
-        valueItem->setFlags(valueItem->flags() & ~Qt::ItemIsEditable);
-        propertiesTree->appendRow({propertyItem, valueItem});
-    }
+        else
+        {
+            if (removeRow)
+                return;
+            QStandardItem *propertyItem = new QStandardItem(property);
+            QStandardItem *valueItem = new QStandardItem(value);
+            propertyItem->setFlags(propertyItem->flags() & ~Qt::ItemIsEditable);
+            valueItem->setFlags(valueItem->flags() & ~Qt::ItemIsEditable);
+            propertiesTree->appendRow({propertyItem, valueItem});
+        }
+    }, Qt::QueuedConnection);
 }
 
 char* removeMarkupTags(char* text)
 {
+    if (!text) return text;
     std::string _text(text);
     std::regex MarkupRegex("((?=<)(?!<\\/)<)(.*?)((?= \\/>)|(?=>))");
 
     std::string output = std::regex_replace(_text, MarkupRegex, "");
 
-    return const_cast<char *>(output.c_str());
+    strcpy(text, output.c_str());
+    return text;
 }
 
 QString removeMarkupTags(QString &text)
